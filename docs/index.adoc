@@ -2,7 +2,7 @@
 
 image::https://img.shields.io/badge/xp-6.+-blue.svg[role="right"]
 
-This library allows sending HTTP requests to a remote server and receiving the response.
+Easily access remote web API's and data sources over HTTP using this library.
 
 To start using this library, add the following into your `build.gradle` file:
 
