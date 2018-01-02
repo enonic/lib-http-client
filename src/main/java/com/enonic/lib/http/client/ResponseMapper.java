@@ -28,7 +28,9 @@ public final class ResponseMapper
         ImmutableSet.of( "okhttp-received-millis", "okhttp-selected-protocol", "okhttp-sent-millis" );
 
     private final static ImmutableList<MediaType> TEXT_CONTENT_TYPES =
-        ImmutableList.of( MediaType.ANY_TEXT_TYPE, MediaType.create( "application", "xml" ), MediaType.create( "application", "json" ) );
+        ImmutableList.of( MediaType.ANY_TEXT_TYPE, MediaType.create( "application", "xml" ), MediaType.create( "application", "json" ),
+                          MediaType.create( "application", "javascript" ), MediaType.create( "application", "soap+xml" ),
+                          MediaType.create( "application", "xml" ) );
 
     private final Response response;
 
@@ -136,7 +138,8 @@ public final class ResponseMapper
         try
         {
             final MediaType mediaType = MediaType.parse( contentType );
-            return TEXT_CONTENT_TYPES.stream().anyMatch( mediaType::is );
+            final String subType = mediaType.subtype() == null ? "" : mediaType.subtype().toLowerCase();
+            return TEXT_CONTENT_TYPES.stream().anyMatch( mediaType::is ) || subType.contains( "xml" ) || subType.contains( "json" );
         }
         catch ( IllegalArgumentException e )
         {
