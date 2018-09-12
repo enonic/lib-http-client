@@ -3,21 +3,23 @@ plugins {
     id 'jacoco'
     id 'maven'
     id 'com.enonic.defaults' version '1.0.3'
-    id 'com.enonic.xp.doc' version '1.0.7'
 }
 
 repositories {
+    mavenLocal()
     jcenter()
-    xp.enonicRepo()
+    maven {
+        url 'http://repo.enonic.com/public'
+    }
 }
 
 dependencies {
     compile "com.enonic.xp:script-api:${xpVersion}"
     compile "com.enonic.xp:core-api:${xpVersion}"
-    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+    compile 'com.squareup.okhttp3:okhttp:3.7.0'
     testCompile 'junit:junit:4.12'
     testCompile "com.enonic.xp:testing:${xpVersion}"
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.7.0'
 }
 
 jacocoTestReport {
