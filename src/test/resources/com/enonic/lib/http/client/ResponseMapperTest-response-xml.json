@@ -6,5 +6,6 @@
   "contentType": "application/mathml+xml; charset=utf-8",
   "headers": {
     "Content-Type": "application/mathml+xml; charset=utf-8"
-  }
+  },
+  "cookies": []
 }

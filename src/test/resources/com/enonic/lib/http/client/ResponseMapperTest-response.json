@@ -6,5 +6,6 @@
   "contentType": "application/json",
   "headers": {
     "Content-Type": "application/json"
-  }
+  },
+  "cookies": []
 }

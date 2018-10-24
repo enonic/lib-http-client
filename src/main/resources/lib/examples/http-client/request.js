@@ -29,7 +29,8 @@ var expected = {
     'headers': {
         'Content-Length': '12',
         'content-type': 'text/plain'
-    }
+    },
+    "cookies": []
 };
 // END
 

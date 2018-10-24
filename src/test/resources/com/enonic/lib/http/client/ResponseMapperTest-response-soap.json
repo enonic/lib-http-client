@@ -6,5 +6,6 @@
   "contentType": "application/soap+xml; charset=utf-8",
   "headers": {
     "Content-Type": "application/soap+xml; charset=utf-8"
-  }
+  },
+  "cookies": []
 }

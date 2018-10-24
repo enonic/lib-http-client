@@ -6,12 +6,14 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
 
+import okhttp3.Cookie;
 import okhttp3.Headers;
 import okhttp3.Response;
 
@@ -34,9 +36,12 @@ public final class ResponseMapper
 
     private final Response response;
 
-    public ResponseMapper( final Response response )
+    private final CookieJar cookieJar;
+
+    public ResponseMapper( final Response response, final CookieJar cookieJar )
     {
         this.response = response;
+        this.cookieJar = cookieJar;
     }
 
     @Override
@@ -53,7 +58,9 @@ public final class ResponseMapper
         gen.value( "body", bodyString );
         gen.value( "bodyStream", bodySource );
         gen.value( "contentType", contentType );
+
         serializeHeaders( "headers", gen, this.response.headers() );
+        serializeCookies( "cookies", gen, this.cookieJar.getCookies() );
     }
 
     private Charset getCharset()
@@ -123,6 +130,24 @@ public final class ResponseMapper
                 continue;
             }
             gen.value( headerName, headers.get( headerName ) );
+        }
+        gen.end();
+    }
+
+    private void serializeCookies( final String name, final MapGenerator gen, final List<Cookie> cookies )
+    {
+        gen.array( name );
+        for ( final Cookie cookie : cookies )
+        {
+            gen.map();
+            gen.value( "name", cookie.name() );
+            gen.value( "value", cookie.value() );
+            gen.value( "path", cookie.path() );
+            gen.value( "domain", cookie.domain() );
+            gen.value( "expires", cookie.expiresAt() );
+            gen.value( "secure", cookie.secure() );
+            gen.value( "httpOnly", cookie.httpOnly() );
+            gen.end();
         }
         gen.end();
     }
