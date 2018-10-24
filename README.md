@@ -6,7 +6,8 @@ Http Client Library for Enonic XP
 [![License](https://img.shields.io/github/license/enonic/lib-http-client.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 This library allows making HTTP requests to a remote server and receiving the response.
-See documentation here: https://enonic-docs.s3.amazonaws.com/com.enonic.lib/lib-http-client/index.html
+
+See documentation here: https://developer.enonic.com/docs/http-client-library/master
 
 
 ## Building
@@ -23,18 +24,4 @@ To release this project, execute the following:
 
 ```
 ./gradlew clean build uploadArchives
-```
-
-## Documentation
-
-Building the documentation is done executing the following:
-
-```
-./gradlew buildDoc
-```
-
-And publishing the docs to S3:
-
-```
-./gradlew publishDoc
 ```
