@@ -66,9 +66,9 @@ public final class HttpRequestHandler
 
     private String authPassword;
 
-    private Trace trace;
+    private CookieJar cookieJar;
 
-    private final static OkHttpClient CLIENT = new OkHttpClient();
+    private Trace trace;
 
     @SuppressWarnings("unused")
     public ResponseMapper request()
@@ -88,17 +88,18 @@ public final class HttpRequestHandler
     {
         final Response response = sendRequest( getRequest() );
         endTracing( response );
-        return new ResponseMapper( response );
+        return new ResponseMapper( response, cookieJar );
     }
 
     private Response sendRequest( final Request request )
         throws IOException
     {
-        final OkHttpClient.Builder clientBuilder = CLIENT.newBuilder();
+        final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
         clientBuilder.readTimeout( this.readTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
         setupProxy( clientBuilder );
         setupAuthentication( clientBuilder );
+        setupCookieJar( clientBuilder );
 
         return clientBuilder.build().newCall( request ).execute();
     }
@@ -226,6 +227,12 @@ public final class HttpRequestHandler
         }
     }
 
+    private void setupCookieJar( final OkHttpClient.Builder clientBuilder )
+    {
+        this.cookieJar = new CookieJar();
+        clientBuilder.cookieJar( this.cookieJar );
+    }
+
     private void setupProxy( final OkHttpClient.Builder client )
     {
         if ( proxyHost == null || proxyHost.trim().isEmpty() )
@@ -248,8 +255,7 @@ public final class HttpRequestHandler
             return;
         }
 
-        Authenticator authenticator = ( route, response ) ->
-        {
+        Authenticator authenticator = ( route, response ) -> {
             if ( authUser == null || authUser.trim().isEmpty() )
             {
                 return null;
@@ -262,8 +268,7 @@ public final class HttpRequestHandler
             return response.request().newBuilder().header( "Authorization", credential ).build();
         };
 
-        Authenticator proxyAuthenticator = ( route, response ) ->
-        {
+        Authenticator proxyAuthenticator = ( route, response ) -> {
             if ( proxyUser == null || proxyUser.trim().isEmpty() )
             {
                 return null;

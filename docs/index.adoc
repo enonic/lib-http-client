@@ -109,6 +109,7 @@ The function will return a `response` object with the following properties:
 * `*status*` (_number_) HTTP status code returned.
 * `*message*` (_string_) HTTP status message returned.
 * `*headers*` (_object_) HTTP headers of the response.
+* `*cookies*` (_object_) Array of HTTP cookies set in the response.
 * `*contentType*` (_string_) Content type of the response.
 * `*body*` (_string_) Body of the response as string. Null if the response content-type is not of type text.
 * `*bodyStream*` (_object_) Body of the response as a stream object.

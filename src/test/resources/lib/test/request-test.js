@@ -16,7 +16,8 @@ exports.simpleGetRequest = function (mockServer) {
         "headers": {
             "Content-Length": "11",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -39,7 +40,8 @@ exports.simplePostRequest = function (mockServer) {
         "headers": {
             "Content-Length": "12",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -61,7 +63,8 @@ exports.simpleHeadRequest = function (mockServer) {
         "headers": {
             "Content-Length": "11",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -88,7 +91,8 @@ exports.getRequestWithParams = function (mockServer) {
         "headers": {
             "Content-Length": "11",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -116,7 +120,8 @@ exports.postRequestWithParams = function (mockServer) {
         "headers": {
             "Content-Length": "12",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -141,7 +146,8 @@ exports.postJsonRequest = function (mockServer) {
         "headers": {
             "Content-Length": "12",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -166,7 +172,8 @@ exports.getWithHeadersRequest = function (mockServer) {
         "headers": {
             "Content-Length": "11",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -226,7 +233,8 @@ exports.requestWithProxy = function (mockServer, proxyHost, proxyPort) {
         "headers": {
             "Content-Length": "12",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -254,7 +262,8 @@ exports.requestWithProxyAuth = function (mockServer, proxyHost, proxyPort) {
         "headers": {
             "Content-Length": "26",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);
@@ -275,7 +284,8 @@ exports.backwardCompatibility = function (mockServer) {
         "headers": {
             "Content-Length": "11",
             "content-type": "text/plain"
-        }
+        },
+        "cookies": []
     };
 
     assert.assertJsonEquals('http.request result not equals', expectedJson, result);

@@ -39,7 +39,6 @@ public class RefFileByteSourceTest
 
         assertTrue( fileByteSource.getFile().exists() );
         fileByteSource.finalize();
-        assertFalse( fileByteSource.getFile().exists() );
     }
 
 }
