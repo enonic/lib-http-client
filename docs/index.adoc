@@ -91,6 +91,7 @@ The request function takes a parameter object with options. The only mandatory o
 ** `*readTimeout*` (_number_) The timeout on waiting to receive data, in milliseconds. The default value is `10000`.
 ** `*body*` (_string_ | _object_) Body content to send with the request, usually for POST or PUT requests. It can be of type string or stream.
 ** `*contentType*` (_string_) Content type of the request.
+** `*followRedirects*` (_boolean_) If set to `false`, redirect responses (status=`3xx`) will not trigger a new internal request, and the function will return directly with the `3xx` status.
 ** `*multipart*` (_object[]_) Multipart form data to send with the request, an array of part objects. Each part object contains 'name', 'value', and optionally 'fileName' and 'contentType' properties. Where 'value' can be either a string or a Stream object.
 ** `*auth*` (_object_) Settings for basic authentication.
 *** `*user*` (_string_) User name for basic authentication.

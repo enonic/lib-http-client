@@ -13,7 +13,7 @@
       "value": "value",
       "path": "/some/path",
       "domain": "mydomain",
-      "expires": 1540378491,
+      "expires": 1540378491000,
       "secure": true,
       "httpOnly": true
     },
@@ -22,7 +22,7 @@
       "value": "value2",
       "path": "/some/path2",
       "domain": "mydomain",
-      "expires": 1506841200,
+      "expires": 1506841200000,
       "secure": false,
       "httpOnly": false
     }
