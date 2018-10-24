@@ -122,14 +122,14 @@ public class ResponseMapperTest
         c1.path( "/some/path" );
         c1.httpOnly();
         c1.secure();
-        c1.expiresAt( 1540378491L );
+        c1.expiresAt( 1540378491000L );
         cookieJar.getCookies().add( c1.build() );
         final Cookie.Builder c2 = new Cookie.Builder();
         c2.name( "name2" );
         c2.value( "value2" );
         c2.domain( "mydomain" );
         c2.path( "/some/path2" );
-        c2.expiresAt( 1506841200L );
+        c2.expiresAt( 1506841200000L );
         cookieJar.getCookies().add( c2.build() );
 
         ResponseMapper mapper = new ResponseMapper( response.build(), cookieJar );

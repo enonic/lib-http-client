@@ -1,4 +1,3 @@
-
 /**
  * HTTP Client related functions.
  *
@@ -53,6 +52,7 @@ function checkRequired(params, name) {
  * @param {number} [params.proxy.port] Proxy port to use.
  * @param {string} [params.proxy.user] User name for proxy authentication.
  * @param {string} [params.proxy.password] Password for proxy authentication.
+ * @param {boolean} [params.followRedirects=true] If set to false redirect responses (status=3xx) will not trigger a new internal request, and the function will return directly with the 3xx status.
  *
  * @return {Response} response HTTP response received.
  */
@@ -71,6 +71,7 @@ exports.request = function (params) {
     bean.body = __.nullOrValue(params.body);
     bean.contentType = __.nullOrValue(params.contentType);
     bean.multipart = __.nullOrValue(params.multipart);
+    bean.followRedirects = __.nullOrValue(params.followRedirects);
     if (params.proxy) {
         bean.proxyHost = __.nullOrValue(params.proxy.host);
         bean.proxyPort = __.nullOrValue(params.proxy.port);

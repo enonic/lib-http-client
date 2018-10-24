@@ -66,6 +66,8 @@ public final class HttpRequestHandler
 
     private String authPassword;
 
+    private boolean followRedirects = true;
+
     private CookieJar cookieJar;
 
     private Trace trace;
@@ -97,6 +99,8 @@ public final class HttpRequestHandler
         final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
         clientBuilder.readTimeout( this.readTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
+        clientBuilder.followRedirects( followRedirects );
+        clientBuilder.followSslRedirects( followRedirects );
         setupProxy( clientBuilder );
         setupAuthentication( clientBuilder );
         setupCookieJar( clientBuilder );
@@ -432,5 +436,14 @@ public final class HttpRequestHandler
     public void setAuthPassword( final String authPassword )
     {
         this.authPassword = authPassword;
+    }
+
+    @SuppressWarnings("unused")
+    public void setFollowRedirects( final Boolean followRedirects )
+    {
+        if ( followRedirects != null )
+        {
+            this.followRedirects = followRedirects;
+        }
     }
 }
