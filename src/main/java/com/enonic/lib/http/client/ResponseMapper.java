@@ -34,45 +34,63 @@ public final class ResponseMapper
                           MediaType.create( "application", "javascript" ), MediaType.create( "application", "soap+xml" ),
                           MediaType.create( "application", "xml" ) );
 
-    private final Response response;
-
     private final CookieJar cookieJar;
+
+    private final int status;
+
+    private final String message;
+
+    private final Headers headers;
+
+    private final String contentType;
+
+    private final ByteSource bodySource;
+
+    private final String bodyString;
 
     public ResponseMapper( final Response response, final CookieJar cookieJar )
     {
-        this.response = response;
         this.cookieJar = cookieJar;
+        try
+        {
+            this.status = response.code();
+            this.message = response.message();
+            this.headers = response.headers();
+            this.contentType = this.headers.get( "content-type" );
+
+            final boolean isHeadMethod = "HEAD".equalsIgnoreCase( response.request().method() );
+            this.bodySource = isHeadMethod ? ByteSource.empty() : getResponseBodyStream( response );
+            this.bodyString = isHeadMethod ? "" : getResponseBodyString( bodySource );
+        }
+        finally
+        {
+            response.body().close();
+        }
     }
 
     @Override
     public void serialize( final MapGenerator gen )
     {
-        gen.value( "status", this.response.code() );
-        gen.value( "message", this.response.message() );
-        final String contentType = this.response.header( "content-type" );
+        gen.value( "status", this.status );
+        gen.value( "message", this.message );
 
-        final boolean isHeadMethod = "HEAD".equalsIgnoreCase( this.response.request().method() );
-        final ByteSource bodySource = isHeadMethod ? ByteSource.empty() : getResponseBodyStream();
-        final String bodyString = isHeadMethod ? "" : getResponseBodyString( bodySource );
+        gen.value( "body", this.bodyString );
+        gen.value( "bodyStream", this.bodySource );
+        gen.value( "contentType", this.contentType );
 
-        gen.value( "body", bodyString );
-        gen.value( "bodyStream", bodySource );
-        gen.value( "contentType", contentType );
-
-        serializeHeaders( "headers", gen, this.response.headers() );
+        serializeHeaders( "headers", gen, this.headers );
         serializeCookies( "cookies", gen, this.cookieJar.getCookies() );
     }
 
     private Charset getCharset()
     {
-        final String contentType = response.header( "content-type" );
-        if ( contentType == null )
+        if ( this.contentType == null )
         {
             return StandardCharsets.UTF_8;
         }
         try
         {
-            final MediaType type = MediaType.parse( contentType );
+            final MediaType type = MediaType.parse( this.contentType );
             return type.charset().or( StandardCharsets.UTF_8 );
         }
         catch ( IllegalArgumentException e )
@@ -93,7 +111,7 @@ public final class ResponseMapper
         }
     }
 
-    private ByteSource getResponseBodyStream()
+    private ByteSource getResponseBodyStream( final Response response )
     {
         try
         {
@@ -103,7 +121,7 @@ public final class ResponseMapper
                 final File tempFile = writeAsTmpFile( response.body().byteStream() );
                 return new RefFileByteSource( tempFile );
             }
-            return ByteSource.wrap( this.response.body().bytes() );
+            return ByteSource.wrap( response.body().bytes() );
         }
         catch ( IOException e )
         {
@@ -154,15 +172,14 @@ public final class ResponseMapper
 
     private boolean isTextContent()
     {
-        final String contentType = this.response.header( "content-type" );
-        if ( isBlank( contentType ) )
+        if ( isBlank( this.contentType ) )
         {
             return false;
         }
 
         try
         {
-            final MediaType mediaType = MediaType.parse( contentType );
+            final MediaType mediaType = MediaType.parse( this.contentType );
             final String subType = mediaType.subtype() == null ? "" : mediaType.subtype().toLowerCase();
             return TEXT_CONTENT_TYPES.stream().anyMatch( mediaType::is ) || subType.contains( "xml" ) || subType.contains( "json" );
         }
