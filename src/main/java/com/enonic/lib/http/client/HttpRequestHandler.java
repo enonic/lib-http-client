@@ -318,10 +318,14 @@ public final class HttpRequestHandler
         {
             this.trace.put( "status", response.code() );
             this.trace.put( "type", response.header( "Content-Type" ) );
-            final Long length = Longs.tryParse( response.header( "Content-Length" ) );
-            if ( length != null )
+            final String contentLength = response.header( "Content-Length" );
+            if ( contentLength != null )
             {
-                this.trace.put( "size", length );
+                final Long length = Longs.tryParse( contentLength );
+                if ( length != null )
+                {
+                    this.trace.put( "size", length );
+                }
             }
         }
     }
