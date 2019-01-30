@@ -15,7 +15,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
 
-import com.enonic.xp.testing.script.ScriptTestSupport;
+import com.enonic.xp.testing.ScriptTestSupport;
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.TraceManager;
 
@@ -221,7 +221,7 @@ public class HttpRequestHandlerTest
 
             final RecordedRequest proxyRequest = proxy.takeRequest();
             assertEquals( "POST", proxyRequest.getMethod() );
-            assertEquals( "http://" + server.getHostName() + ":" + server.getPort() + "/my/url", proxyRequest.getPath() );
+            assertTrue( proxyRequest.getRequestLine().contains( "http://" + getServerHost() + "/my/url" ) );
         }
         finally
         {
@@ -251,7 +251,7 @@ public class HttpRequestHandlerTest
 
             final RecordedRequest proxyRequest = proxy.takeRequest();
             assertEquals( "POST", proxyRequest.getMethod() );
-            assertEquals( "http://" + server.getHostName() + ":" + server.getPort() + "/my/url", proxyRequest.getPath() );
+            assertTrue( proxyRequest.getRequestLine().contains( "http://" + getServerHost() + "/my/url" ) );
         }
         finally
         {

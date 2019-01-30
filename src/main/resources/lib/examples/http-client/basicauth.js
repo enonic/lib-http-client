@@ -1,5 +1,4 @@
 var httpClientLib = require('/lib/http-client');
-var assert = require('/lib/xp/assert');
 
 function getServerHost() {
     return testInstance.getServerHost();
