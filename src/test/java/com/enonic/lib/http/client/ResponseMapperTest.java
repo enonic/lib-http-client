@@ -9,7 +9,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import com.enonic.xp.testing.JsonAssert;
+import com.enonic.xp.testing.helper.JsonAssert;
 
 public class ResponseMapperTest
 {

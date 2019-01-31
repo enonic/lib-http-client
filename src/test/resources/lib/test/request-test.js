@@ -1,6 +1,6 @@
-var assert = require('/lib/xp/assert.js');
-var http = require('/lib/http-client.js');
-var oldHttp = require('/lib/xp/http-client.js');
+var assert = require('/lib/xp/testing');
+var http = require('/lib/http-client');
+var oldHttp = require('/lib/xp/http-client');
 
 exports.simpleGetRequest = function (mockServer) {
 
@@ -20,7 +20,7 @@ exports.simpleGetRequest = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -44,7 +44,7 @@ exports.simplePostRequest = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -67,7 +67,7 @@ exports.simpleHeadRequest = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -95,8 +95,8 @@ exports.getRequestWithParams = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
-    assert.assertNotNull('http.request stream body null', result.bodyStream);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
+    assert.assertNotNull(result.bodyStream, 'http.request stream body null');
 
 };
 
@@ -124,7 +124,7 @@ exports.postRequestWithParams = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -150,7 +150,7 @@ exports.postJsonRequest = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -176,7 +176,7 @@ exports.getWithHeadersRequest = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -189,11 +189,11 @@ exports.getWithResponseTimeout = function (mockServer) {
             readTimeout: 1000
         });
 
-        assert.assertTrue('Expected exception', false);
+        assert.assertTrue(false, 'Expected exception');
 
     } catch (e) {
         var expectedResult = ("timeout" == e.message) || ("Read timed out" == e.message);
-        assert.assertTrue('Expected exception', expectedResult);
+        assert.assertTrue(expectedResult, 'Expected exception');
     }
 };
 
@@ -205,11 +205,11 @@ exports.getWithConnectTimeout = function (mockServer) {
             method: 'get',
             connectionTimeout: 1000
         });
-        assert.assertTrue('Expected exception', false);
+        assert.assertTrue(false, 'Expected exception');
 
     } catch (e) {
         var expectedResult = ("timeout" == e.message) || ("Read timed out" == e.message);
-        assert.assertTrue('Expected exception', expectedResult);
+        assert.assertTrue(expectedResult, 'Expected exception');
     }
 
 };
@@ -225,6 +225,8 @@ exports.requestWithProxy = function (mockServer, proxyHost, proxyPort) {
         }
     });
 
+    log.info(JSON.stringify(result, null, 2));
+
     var expectedJson = {
         "status": 200,
         "message": "OK",
@@ -237,7 +239,7 @@ exports.requestWithProxy = function (mockServer, proxyHost, proxyPort) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -266,7 +268,7 @@ exports.requestWithProxyAuth = function (mockServer, proxyHost, proxyPort) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
 
@@ -288,6 +290,6 @@ exports.backwardCompatibility = function (mockServer) {
         "cookies": []
     };
 
-    assert.assertJsonEquals('http.request result not equals', expectedJson, result);
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
 
 };
