@@ -23,5 +23,5 @@ To build this project, execute the following:
 To release this project, execute the following:
 
 ```
-./gradlew clean build uploadArchives
+./gradlew clean build publish
 ```
