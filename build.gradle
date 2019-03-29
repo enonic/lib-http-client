@@ -16,11 +16,12 @@ repositories {
 dependencies {
     compile "com.enonic.xp:script-api:${xpVersion}"
     compile "com.enonic.xp:core-api:${xpVersion}"
-    compile 'com.squareup.okhttp3:okhttp:3.12.1'
+    compile 'com.squareup.okhttp3:okhttp:3.14.0'
     compile "com.enonic.xp:jaxrs-api:${xpVersion}"
     testCompile 'junit:junit:4.12'
     testCompile "com.enonic.xp:testing:${xpVersion}"
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.12.1'
+    testCompile "org.mockito:mockito-core:+"
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.14.0'
 }
 
 jacocoTestReport {

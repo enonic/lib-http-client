@@ -1,6 +1,5 @@
 var assert = require('/lib/xp/testing');
 var http = require('/lib/http-client');
-var oldHttp = require('/lib/xp/http-client');
 
 exports.simpleGetRequest = function (mockServer) {
 
@@ -263,28 +262,6 @@ exports.requestWithProxyAuth = function (mockServer, proxyHost, proxyPort) {
         "contentType": "text/plain",
         "headers": {
             "Content-Length": "26",
-            "content-type": "text/plain"
-        },
-        "cookies": []
-    };
-
-    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
-
-};
-
-exports.backwardCompatibility = function (mockServer) {
-
-    var result = oldHttp.request({
-        url: 'http://' + mockServer + '/my/url'
-    });
-
-    var expectedJson = {
-        "status": 200,
-        "message": "OK",
-        "body": "GET request",
-        "contentType": "text/plain",
-        "headers": {
-            "Content-Length": "11",
             "content-type": "text/plain"
         },
         "cookies": []

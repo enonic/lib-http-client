@@ -10,6 +10,7 @@ import com.google.common.io.Files;
 /**
  * Wrapper for FileByteSource that deletes the file when there are no references to it (i.e. it's garbage collected and the finalize method is called).
  */
+
 public final class RefFileByteSource
     extends ByteSource
 {
@@ -49,8 +50,7 @@ public final class RefFileByteSource
         return byteSource.openStream();
     }
 
-    @Override
-    protected void finalize()
+    void deleteFile()
         throws Throwable
     {
         this.file.delete();

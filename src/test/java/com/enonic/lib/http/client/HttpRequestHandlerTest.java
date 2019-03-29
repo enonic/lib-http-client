@@ -301,20 +301,6 @@ public class HttpRequestHandlerTest
     }
 
     @Test
-    public void testBackwardCompatibility()
-        throws Exception
-    {
-        addResponse( "GET request" );
-
-        runFunction( "/lib/test/request-test.js", "backwardCompatibility", getServerHost() );
-
-        final RecordedRequest request = takeRequest();
-        assertEquals( "GET", request.getMethod() );
-        assertEquals( "/my/url", request.getPath() );
-        assertEquals( "", request.getBody().readString( Charsets.UTF_8 ) );
-    }
-
-    @Test
     public void testSimpleGetRequestWithoutTracing()
         throws Exception
     {
