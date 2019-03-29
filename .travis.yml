@@ -1,11 +1,8 @@
-language: groovy
+language: java
 sudo: false
 
 jdk:
-- oraclejdk8
-
-before_install:
-- chmod +x gradlew
+- oraclejdk11
 
 script: ./gradlew build
 
@@ -16,8 +13,3 @@ cache:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
