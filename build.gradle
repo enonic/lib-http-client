@@ -3,14 +3,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'com.enonic.defaults' version '2.0.1'
-}
-
-repositories {
-    mavenLocal()
-    jcenter()
-    maven {
-        url 'http://repo.enonic.com/public'
-    }
+    id 'com.enonic.xp.base' version '2.0.0'
 }
 
 dependencies {
@@ -22,6 +15,12 @@ dependencies {
     testCompile "com.enonic.xp:testing:${xpVersion}"
     testCompile "org.mockito:mockito-core:+"
     testCompile 'com.squareup.okhttp3:mockwebserver:3.14.0'
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+    xp.enonicRepo()
 }
 
 jacocoTestReport {
