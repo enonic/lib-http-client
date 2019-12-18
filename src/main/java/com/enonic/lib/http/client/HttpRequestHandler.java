@@ -1,11 +1,15 @@
 package com.enonic.lib.http.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.X509TrustManager;
 
 import com.google.common.io.ByteSource;
 import com.google.common.primitives.Longs;
@@ -72,6 +76,8 @@ public final class HttpRequestHandler
 
     private Trace trace;
 
+    private ByteSource certificates;
+
     @SuppressWarnings("unused")
     public ResponseMapper request()
         throws Exception
@@ -97,6 +103,20 @@ public final class HttpRequestHandler
         throws IOException
     {
         final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
+
+        if (certificates != null)
+        {
+            try (final InputStream certificatesStream = certificates.openStream())
+            {
+                final X509TrustManager x509TrustManager = CertificateTools.buildTrustManagerWithCertificates( certificatesStream );
+                CertificateTools.configureSocketFactory( clientBuilder, x509TrustManager );
+            }
+            catch ( GeneralSecurityException e )
+            {
+                throw new RuntimeException( e );
+            }
+        }
+
         clientBuilder.readTimeout( this.readTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.followRedirects( followRedirects );
@@ -449,5 +469,11 @@ public final class HttpRequestHandler
         {
             this.followRedirects = followRedirects;
         }
+    }
+
+    @SuppressWarnings("unused")
+    public void setCertificates( final ByteSource certificates )
+    {
+        this.certificates = certificates;
     }
 }

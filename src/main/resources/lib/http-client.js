@@ -53,6 +53,7 @@ function checkRequired(params, name) {
  * @param {string} [params.proxy.user] User name for proxy authentication.
  * @param {string} [params.proxy.password] Password for proxy authentication.
  * @param {boolean} [params.followRedirects=true] If set to false redirect responses (status=3xx) will not trigger a new internal request, and the function will return directly with the 3xx status.
+ * @param {*} params.certificates Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with custom set.
  *
  * @return {Response} response HTTP response received.
  */
@@ -82,6 +83,7 @@ exports.request = function (params) {
         bean.authUser = __.nullOrValue(params.auth.user);
         bean.authPassword = __.nullOrValue(params.auth.password);
     }
+    bean.certificates = __.nullOrValue(params.certificates);
     return __.toNativeObject(bean.request());
 
 };
