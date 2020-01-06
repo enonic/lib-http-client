@@ -101,6 +101,7 @@ The request function takes a parameter object with options. The only mandatory o
 *** `*port*` (_number_) Proxy port to use.
 *** `*user*` (_string_) User name for proxy authentication.
 *** `*password*` (_string_) Password for proxy authentication.
+** `*certificates*` (_*_) Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with a custom certificate.
 
 
 *Returns*
@@ -176,6 +177,22 @@ var response = httpClient.request({
 });
 ----
 
+=== `Using custom certificate`
+[source,js]
+----
+var httpClient = require('/lib/http-client');
+var ioLib = require('/lib/xp/io');  // IO API library from XP
+var token = app.config['token']; // Token stored in the application config file
+var certificates = app.config['certificates']; // Certificate stored in the application config file
+
+var response = httpClient.request({
+    url: 'http://somehost/some/service',
+    method: 'POST',
+    headers: {'Authorization': 'Bearer ' + token},
+    contentType: 'application/json',
+    certificates: ioLib.newStream(certificates)
+});
+----
 
 == Compatibility
 
