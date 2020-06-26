@@ -37,6 +37,7 @@ function checkRequired(params, name) {
  * @param {string} params.url URL to which the request is sent.
  * @param {string} [params.method=GET] The HTTP method to use for the request (e.g. "POST", "GET", "HEAD", "PUT", "DELETE").
  * @param {object} [params.params] Query or form parameters to be sent with the request.
+ * @param {object} [params.queryParams] Query parameters to be sent with the request.
  * @param {object} [params.headers] HTTP headers, an object where the keys are header names and the values the header values.
  * @param {number} [params.connectionTimeout=10000] The timeout on establishing the connection, in milliseconds.
  * @param {number} [params.readTimeout=10000] The timeout on waiting to receive data, in milliseconds.
@@ -65,6 +66,7 @@ exports.request = function (params) {
 
     bean.url = __.nullOrValue(params.url);
     bean.params = __.nullOrValue(params.params);
+    bean.queryParams = __.nullOrValue(params.queryParams);
     bean.method = __.nullOrValue(params.method);
     bean.headers = __.nullOrValue(params.headers);
     bean.connectionTimeout = __.nullOrValue(params.connectionTimeout);

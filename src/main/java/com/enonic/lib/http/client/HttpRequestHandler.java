@@ -42,6 +42,8 @@ public final class HttpRequestHandler
 
     private Map<String, Object> params;
 
+    private Map<String, Object> queryParams;
+
     private String method = "GET";
 
     private Map<String, String> headers;
@@ -104,7 +106,7 @@ public final class HttpRequestHandler
     {
         final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
 
-        if (certificates != null)
+        if ( certificates != null )
         {
             try (final InputStream certificatesStream = certificates.openStream())
             {
@@ -134,6 +136,55 @@ public final class HttpRequestHandler
         final Request.Builder request = new Request.Builder();
         request.url( this.url );
 
+        if ( queryParams == null )
+        {
+            // for backwards compatibility with older versions which don't support queryParams
+            if ( HttpMethod.permitsRequestBody( this.method ) )
+            {
+                RequestBody requestBody = createRequestBody();
+                request.method( this.method, requestBody );
+            }
+            else
+            {
+                HttpUrl url = HttpUrl.parse( this.url );
+                if ( this.params != null )
+                {
+                    url = addParams( url, this.params );
+                }
+                request.url( url );
+
+                request.method( this.method, null );
+            }
+        }
+        else
+        {
+            HttpUrl url = HttpUrl.parse( this.url );
+
+            if ( url != null )
+            {
+                url = addParams( url, queryParams );
+                request.url( url );
+            }
+
+            if ( HttpMethod.permitsRequestBody( this.method ) )
+            {
+                RequestBody requestBody = createRequestBody();
+                request.method( this.method, requestBody );
+            }
+            else
+            {
+                request.method( this.method, null );
+            }
+        }
+
+        addHeaders( request, this.headers );
+        addAuthHeaders( request );
+        return request.build();
+    }
+
+    private RequestBody createRequestBody()
+        throws IOException
+    {
         RequestBody requestBody = null;
         if ( this.params != null && !this.params.isEmpty() )
         {
@@ -155,34 +206,13 @@ public final class HttpRequestHandler
         {
             requestBody = getMultipartBody();
         }
-
-        if ( "GET".equals( this.method ) )
+        else if ( HttpMethod.requiresRequestBody( this.method ) )
         {
-            HttpUrl url = HttpUrl.parse( this.url );
-            if ( this.params != null )
-            {
-                url = addParams( url, this.params );
-            }
-            request.url( url );
-            if ( this.contentType != null )
-            {
-                request.header( "Content-Type", this.contentType );
-            }
-            request.get();
-        }
-        else
-        {
-            if ( requestBody == null && HttpMethod.requiresRequestBody( this.method ) )
-            {
-                final MediaType mediaType = this.contentType != null ? MediaType.parse( this.contentType ) : null;
-                requestBody = RequestBody.create( mediaType, "" );
-            }
-            request.method( this.method, requestBody );
+            final MediaType mediaType = this.contentType != null ? MediaType.parse( this.contentType ) : null;
+            requestBody = RequestBody.create( mediaType, "" );
         }
 
-        addHeaders( request, this.headers );
-        addAuthHeaders( request );
-        return request.build();
+        return requestBody;
     }
 
     private RequestBody getMultipartBody()
@@ -228,16 +258,16 @@ public final class HttpRequestHandler
     {
         HttpUrl.Builder urlBuilder = url.newBuilder();
         params.entrySet().stream().
-            filter( header -> header.getValue() != null ).
-            forEach( header -> urlBuilder.addEncodedQueryParameter( header.getKey(), header.getValue().toString() ) );
+            filter( param -> param.getValue() != null ).
+            forEach( param -> urlBuilder.addEncodedQueryParameter( param.getKey(), param.getValue().toString() ) );
         return urlBuilder.build();
     }
 
     private void addParams( final FormBody.Builder formBody, final Map<String, Object> params )
     {
         params.entrySet().stream().
-            filter( header -> header.getValue() != null ).
-            forEach( header -> formBody.add( header.getKey(), header.getValue().toString() ) );
+            filter( param -> param.getValue() != null ).
+            forEach( param -> formBody.add( param.getKey(), param.getValue().toString() ) );
     }
 
     private void addHeaders( final Request.Builder request, final Map<String, String> headers )
@@ -391,6 +421,12 @@ public final class HttpRequestHandler
     public void setParams( final Map<String, Object> params )
     {
         this.params = params;
+    }
+
+    @SuppressWarnings("unused")
+    public void setQueryParams( final Map<String, Object> queryParams )
+    {
+        this.queryParams = queryParams;
     }
 
     @SuppressWarnings("unused")

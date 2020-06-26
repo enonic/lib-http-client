@@ -145,7 +145,7 @@ public class HttpRequestHandlerTest
 
         final RecordedRequest request = takeRequest();
         assertEquals( "POST", request.getMethod() );
-        assertEquals( "/my/url", request.getPath() );
+        assertEquals( "/my/url?p1=123&p2=something", request.getPath() );
         assertEquals( "a=123&b=456", request.getBody().readString( Charsets.UTF_8 ) );
     }
 

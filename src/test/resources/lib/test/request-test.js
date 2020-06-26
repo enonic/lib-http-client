@@ -108,6 +108,10 @@ exports.postRequestWithParams = function (mockServer) {
             'a': 123,
             'b': 456,
             'c': null
+        },
+        queryParams: {
+            p1: 123,
+            p2: 'something'
         }
     });
 
