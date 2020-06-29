@@ -85,7 +85,8 @@ The request function takes a parameter object with options. The only mandatory o
 * `options` (_object_) Parameters to make the HTTP request.
 ** `*url*` (_string_) URL to which the request is sent.
 ** `*method*` (_string_) The HTTP method to use for the request (e.g. "POST", "GET", "HEAD", "PUT", "DELETE"). The default value is `"GET"`.
-** `*params*` (_object_) Query or form parameters to be sent with the request.
+** `*queryParams*` (_object_) [*v2.2.0+*] Query parameters to be sent with the request.
+** `*params*` (_object_) Form parameters to be sent with the request. Will not be used if `*queryParams*` is provided.
 ** `*headers*` (_object_) HTTP headers, an object where the keys are header names and the values the header values.
 ** `*connectionTimeout*` (_number_) The timeout on establishing the connection, in milliseconds. The default value is `10000`.
 ** `*readTimeout*` (_number_) The timeout on waiting to receive data, in milliseconds. The default value is `10000`.
