@@ -50,9 +50,14 @@ public final class RefFileByteSource
         return byteSource.openStream();
     }
 
-    void deleteFile()
+    protected void finalize()
         throws Throwable
     {
-        this.file.delete();
+      try {
+          this.file.delete();
+
+      } finally {
+          super.finalize();
+      }
     }
 }
