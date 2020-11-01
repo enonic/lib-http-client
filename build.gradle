@@ -14,7 +14,7 @@ dependencies {
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
     compile "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
     testImplementation "com.enonic.xp:testing:${xpVersion}"
     testImplementation "org.mockito:mockito-core:+"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
