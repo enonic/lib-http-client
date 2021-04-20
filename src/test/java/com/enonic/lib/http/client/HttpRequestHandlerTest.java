@@ -108,6 +108,20 @@ public class HttpRequestHandlerTest
     }
 
     @Test
+    public void testSimplePatchRequest()
+        throws Exception
+    {
+        server.enqueue( addResponse( "PATCH request" ) );
+
+        runFunction( "/lib/test/request-test.js", "simplePatchRequest", getServerHost() );
+
+        final RecordedRequest request = takeRequest();
+        assertEquals( "PATCH", request.getMethod() );
+        assertEquals( "/my/url", request.getPath() );
+        assertEquals( "PATCH body", request.getBody().readString( Charsets.UTF_8 ) );
+    }
+
+    @Test
     public void testSimpleHeadRequest()
         throws Exception
     {
