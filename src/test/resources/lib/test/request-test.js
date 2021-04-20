@@ -47,6 +47,29 @@ exports.simplePostRequest = function (mockServer) {
 
 };
 
+exports.simplePatchRequest = function (mockServer) {
+
+    var result = http.request({
+        url: 'http://' + mockServer + '/my/url',
+        method: 'patch',
+        body: 'PATCH body'
+    });
+
+    var expectedJson = {
+        "status": 200,
+        "message": "OK",
+        "body": "PATCH request",
+        "contentType": "text/plain",
+        "headers": {
+            "Content-Length": "13",
+            "content-type": "text/plain"
+        },
+        "cookies": []
+    };
+
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
+};
+
 exports.simpleHeadRequest = function (mockServer) {
 
     var result = http.request({
