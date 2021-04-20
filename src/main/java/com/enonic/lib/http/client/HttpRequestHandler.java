@@ -1,15 +1,11 @@
 package com.enonic.lib.http.client;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.X509TrustManager;
 
 import com.google.common.io.ByteSource;
 import com.google.common.primitives.Longs;
@@ -80,6 +76,8 @@ public final class HttpRequestHandler
 
     private ByteSource certificates;
 
+    private ByteSource clientCertificate;
+
     @SuppressWarnings("unused")
     public ResponseMapper request()
         throws Exception
@@ -106,18 +104,7 @@ public final class HttpRequestHandler
     {
         final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
 
-        if ( certificates != null )
-        {
-            try (final InputStream certificatesStream = certificates.openStream())
-            {
-                final X509TrustManager x509TrustManager = CertificateTools.buildTrustManagerWithCertificates( certificatesStream );
-                CertificateTools.configureSocketFactory( clientBuilder, x509TrustManager );
-            }
-            catch ( GeneralSecurityException e )
-            {
-                throw new RuntimeException( e );
-            }
-        }
+        new CertificateTools( certificates, clientCertificate ).setupHandshakeCertificates( clientBuilder );
 
         clientBuilder.readTimeout( this.readTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
@@ -257,17 +244,19 @@ public final class HttpRequestHandler
     private HttpUrl addParams( final HttpUrl url, final Map<String, Object> params )
     {
         HttpUrl.Builder urlBuilder = url.newBuilder();
-        params.entrySet().stream().
-            filter( param -> param.getValue() != null ).
-            forEach( param -> urlBuilder.addEncodedQueryParameter( param.getKey(), param.getValue().toString() ) );
+        params.entrySet()
+            .stream()
+            .filter( param -> param.getValue() != null )
+            .forEach( param -> urlBuilder.addEncodedQueryParameter( param.getKey(), param.getValue().toString() ) );
         return urlBuilder.build();
     }
 
     private void addParams( final FormBody.Builder formBody, final Map<String, Object> params )
     {
-        params.entrySet().stream().
-            filter( param -> param.getValue() != null ).
-            forEach( param -> formBody.add( param.getKey(), param.getValue().toString() ) );
+        params.entrySet()
+            .stream()
+            .filter( param -> param.getValue() != null )
+            .forEach( param -> formBody.add( param.getKey(), param.getValue().toString() ) );
     }
 
     private void addHeaders( final Request.Builder request, final Map<String, String> headers )
@@ -511,5 +500,11 @@ public final class HttpRequestHandler
     public void setCertificates( final ByteSource certificates )
     {
         this.certificates = certificates;
+    }
+
+    @SuppressWarnings("unused")
+    public void setClientCertificate( final ByteSource clientCertificate )
+    {
+        this.clientCertificate = clientCertificate;
     }
 }
