@@ -103,7 +103,7 @@ The request function takes a parameter object with options. The only mandatory o
 *** `*user*` (_string_) User name for proxy authentication.
 *** `*password*` (_string_) Password for proxy authentication.
 ** `*certificates*` (_*_) Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with a custom certificate.
-** `*clientCertificate*` (_*_) Stream of PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
+** `*clientCertificate*` (_*_) [*v2.3.0+*] Stream of PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
 
 *Returns*
 
