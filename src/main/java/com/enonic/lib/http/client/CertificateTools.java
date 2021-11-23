@@ -3,7 +3,7 @@ package com.enonic.lib.http.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
+import java.security.*;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
@@ -28,36 +28,43 @@ final class CertificateTools
     public void setupHandshakeCertificates( final OkHttpClient.Builder clientBuilder )
         throws IOException
     {
-        if ( certificates != null || clientCertificate != null )
-        {
-            final HandshakeCertificates.Builder handshakeCertificatesBuilder = new HandshakeCertificates.Builder();
+        final HandshakeCertificates.Builder handshakeCertificatesBuilder = new HandshakeCertificates.Builder();
 
-            if ( certificates != null )
+        if ( certificates != null )
+        {
+            // Add custom CA certificates
+            try (InputStream certificatesStream = certificates.openStream())
             {
-                try (InputStream certificatesStream = certificates.openStream())
-                {
-                    final CertificateFactory certificateFactory = CertificateFactory.getInstance( "X.509" );
-                    certificateFactory.generateCertificates( certificatesStream )
+                final CertificateFactory certificateFactory = CertificateFactory.getInstance( "X.509" );
+                certificateFactory.generateCertificates( certificatesStream )
                         .stream()
                         .map( certificate -> (X509Certificate) certificate )
                         .forEach( handshakeCertificatesBuilder::addTrustedCertificate );
-                }
-                catch ( GeneralSecurityException e )
-                {
-                    throw new RuntimeException( e );
-                }
             }
-            else
+            catch ( GeneralSecurityException e )
             {
-                handshakeCertificatesBuilder.addPlatformTrustedCertificates();
+                throw new RuntimeException( e );
             }
-            if ( clientCertificate != null )
-            {
-                handshakeCertificatesBuilder.heldCertificate(
-                    HeldCertificate.decode( new String( clientCertificate.read(), StandardCharsets.ISO_8859_1 ) ) );
-            }
-            final HandshakeCertificates handshakeCertificates = handshakeCertificatesBuilder.build();
-            clientBuilder.sslSocketFactory( handshakeCertificates.sslSocketFactory(), handshakeCertificates.trustManager() );
         }
+        else
+        {
+            // Add default trusted CA certificates
+            handshakeCertificatesBuilder.addPlatformTrustedCertificates();
+        }
+
+        if ( clientCertificate != null )
+        {
+            // Add custom client key and certificate
+            handshakeCertificatesBuilder.heldCertificate(
+                HeldCertificate.decode( new String( clientCertificate.read(), StandardCharsets.ISO_8859_1 ) ) );
+        }
+        else {
+            // Use client key and certificate defined in keystore if available
+            KeyStoreLoader.addKeyStore(handshakeCertificatesBuilder);
+        }
+
+        // Set certificates
+        final HandshakeCertificates handshakeCertificates = handshakeCertificatesBuilder.build();
+        clientBuilder.sslSocketFactory( handshakeCertificates.sslSocketFactory(), handshakeCertificates.trustManager() );
     }
 }
