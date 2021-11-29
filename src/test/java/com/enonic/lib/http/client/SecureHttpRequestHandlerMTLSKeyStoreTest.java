@@ -1,13 +1,13 @@
 package com.enonic.lib.http.client;
 
-import okhttp3.mockwebserver.MockResponse;
+import java.net.SocketException;
+
 import org.junit.After;
 import org.junit.Test;
 
-import java.net.ConnectException;
+import okhttp3.mockwebserver.MockResponse;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 public class SecureHttpRequestHandlerMTLSKeyStoreTest
     extends SecureHttpRequest
@@ -28,29 +28,41 @@ public class SecureHttpRequestHandlerMTLSKeyStoreTest
     @After
     public void clearTrustStore()
     {
-        KeyStoreLoader.clear();
-        System.clearProperty("javax.net.ssl.keyStore");
-        System.clearProperty("javax.net.ssl.keyStorePassword");
+        KeyStoreLoader.clearCache();
+        System.clearProperty( "com.enonic.lib.http.client.keyStore" );
+        System.clearProperty( "com.enonic.lib.http.client.keyStorePassword" );
     }
 
     @Test
     public void withClientCertificateGetRequest()
     {
-        KeyStoreLoader.clear();
-        System.setProperty("javax.net.ssl.keyStore", keyStorePath);
-        System.setProperty("javax.net.ssl.keyStorePassword", keyStorePass);
+        KeyStoreLoader.clearCache();
+        System.setProperty( "com.enonic.lib.http.client.keyStore", keyStorePath );
+        System.setProperty( "com.enonic.lib.http.client.keyStorePassword", keyStorePass );
 
         final MockResponse response = new MockResponse();
         response.setBody( "GET request" );
         response.setHeader( "content-type", "text/plain" );
         server.enqueue( response );
 
-        runFunction(
-            "/lib/test/secure-request-test.js",
-            "withNoClientCertificatesGetRequest",
-            server.url( "/my/url" ),
-            serverCertificateBytes
-        );
+        runFunction( "/lib/test/secure-request-test.js", "withNoClientCertificatesGetRequest", server.url( "/my/url" ),
+                     serverCertificateBytes );
+    }
+
+    @Test
+    public void withClientCertificateAliasGetRequest()
+    {
+        KeyStoreLoader.clearCache();
+        System.setProperty( "com.enonic.lib.http.client.keyStore", keyStorePath );
+        System.setProperty( "com.enonic.lib.http.client.keyStorePassword", keyStorePass );
+
+        final MockResponse response = new MockResponse();
+        response.setBody( "GET request" );
+        response.setHeader( "content-type", "text/plain" );
+        server.enqueue( response );
+
+        runFunction( "/lib/test/secure-request-test.js", "withClientCertificateAliasGetRequest", server.url( "/my/url" ),
+                     serverCertificateBytes );
     }
 
     @Test
@@ -61,13 +73,10 @@ public class SecureHttpRequestHandlerMTLSKeyStoreTest
         response.setHeader( "content-type", "text/plain" );
         server.enqueue( response );
 
-        Exception exception = assertThrows(RuntimeException.class, () -> runFunction(
-            "/lib/test/secure-request-test.js",
-            "withNoClientCertificatesGetRequest",
-            server.url( "/my/url" ),
-            serverCertificateBytes
-        ));
+        Exception exception = assertThrows( RuntimeException.class,
+                                            () -> runFunction( "/lib/test/secure-request-test.js", "withNoClientCertificatesGetRequest",
+                                                               server.url( "/my/url" ), serverCertificateBytes ) );
 
-        assertEquals(exception.getCause().getClass(), ConnectException.class);
+        assertTrue( exception.getCause() instanceof SocketException );
     }
 }

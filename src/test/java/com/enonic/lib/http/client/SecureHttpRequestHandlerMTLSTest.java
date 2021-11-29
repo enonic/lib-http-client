@@ -1,12 +1,12 @@
 package com.enonic.lib.http.client;
 
-import okhttp3.mockwebserver.MockResponse;
+import java.net.SocketException;
+
 import org.junit.Test;
 
-import java.net.ConnectException;
+import okhttp3.mockwebserver.MockResponse;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 public class SecureHttpRequestHandlerMTLSTest
     extends SecureHttpRequest
@@ -51,6 +51,6 @@ public class SecureHttpRequestHandlerMTLSTest
             serverCertificateBytes
         ));
 
-        assertEquals(exception.getCause().getClass(), ConnectException.class);
+        assertTrue( exception.getCause() instanceof SocketException );
     }
 }

@@ -103,7 +103,11 @@ The request function takes a parameter object with options. The only mandatory o
 *** `*user*` (_string_) User name for proxy authentication.
 *** `*password*` (_string_) Password for proxy authentication.
 ** `*certificates*` (_*_) Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with a custom certificate.
-** `*clientCertificate*` (_*_) [*v2.3.0+*] Stream of PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
+** `*clientCertificate*` (_string |_*_) [*v2.3.0+*]
+*** If value is `undefined` or empty string, first available alias in KeyStore is used. KeyStore specified by `com.enonic.lib.http.client.keyStore` system property. [*v2.4.0+*]
+*** If value is typeof `string` and not empty it is interpreted as alias name in KeyStore. [*v2.4.0+*]
+*** If type value is Stream, this Stream is interpreted as PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
+*** If value `null`, no client certificate is used.
 
 *Returns*
 
@@ -117,6 +121,17 @@ The function will return a `response` object with the following properties:
 * `*body*` (_string_) Body of the response as string. Null if the response content-type is not of type text.
 * `*bodyStream*` (_object_) Body of the response as a stream object.
 
+== KeyStore Configuration [*v2.4.0+*]
+
+There are multiple system properties similar to Default JSSE KeyStore system properties https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html#GUID-7D9F43B8-AABF-4C5B-93E6-3AFB18B66150
+They allow to configure a KeyStore that stores a keypair to be used for mTLS authentication, if `clientCertificate` is not specified in the request options, or if `clientCertificate` is specified an alias name.
+
+* `com.enonic.lib.http.client.keyStore` Path to the KeyStore file. No KeyStore is used, if not specified.
+* `com.enonic.lib.http.client.keyStorePassword` KeyStore password.
+* `com.enonic.lib.http.client.keyStoreType` KeyStore type. Default is a value returned by `KeyStore.getDefaultType()`.
+* `com.enonic.lib.http.client.keyStoreProvider` KeyStore provider name.
+
+NOTE: In case when `clientCertificate` is not specified (`undefined` or empty string) there must be only one alias in the KeyStore, and it must be an alias for a keypair with a certificate.
 
 == Examples
 
@@ -184,14 +199,14 @@ var response = httpClient.request({
 var httpClient = require('/lib/http-client');
 var ioLib = require('/lib/xp/io');  // IO API library from XP
 var token = app.config['token']; // Token stored in the application config file
-var certificates = app.config['certificates']; // Certificate stored in the application config file
+var certificates = ioLib.newStream(app.config['certificates']); // Certificate stored in the application config file. NOTE: It is not a location of the certificate file, but body of the certificate itself.
 
 var response = httpClient.request({
     url: 'http://somehost/some/service',
     method: 'POST',
     headers: {'Authorization': 'Bearer ' + token},
     contentType: 'application/json',
-    certificates: ioLib.newStream(certificates)
+    certificates: certificates
 });
 ----
 
