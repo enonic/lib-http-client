@@ -78,6 +78,8 @@ public final class HttpRequestHandler
 
     private ByteSource clientCertificate;
 
+    private String clientCertificateAlias;
+
     @SuppressWarnings("unused")
     public ResponseMapper request()
         throws Exception
@@ -102,9 +104,9 @@ public final class HttpRequestHandler
     private Response sendRequest( final Request request )
         throws IOException
     {
-        final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
+        final OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
 
-        new CertificateTools( certificates, clientCertificate ).setupHandshakeCertificates( clientBuilder );
+        new CertificateTools( certificates, clientCertificate, clientCertificateAlias ).setupHandshakeCertificates( clientBuilder );
 
         clientBuilder.readTimeout( this.readTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
@@ -506,5 +508,11 @@ public final class HttpRequestHandler
     public void setClientCertificate( final ByteSource clientCertificate )
     {
         this.clientCertificate = clientCertificate;
+    }
+
+    @SuppressWarnings("unused")
+    public void setClientCertificateAlias( final String clientCertificateAlias )
+    {
+        this.clientCertificateAlias = clientCertificateAlias;
     }
 }

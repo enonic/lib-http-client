@@ -55,7 +55,10 @@ function checkRequired(params, name) {
  * @param {string} [params.proxy.password] Password for proxy authentication.
  * @param {boolean} [params.followRedirects=true] If set to false redirect responses (status=3xx) will not trigger a new internal request, and the function will return directly with the 3xx status.
  * @param {*} params.certificates Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with custom set.
- * @param {*} params.clientCertificate Stream of PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
+ * @param {string|*} params.clientCertificate If value is typeof string it is interpreted as alias name in KeyStore (Keystore specified by com.enonic.lib.http.client.keyStore system property).
+ * OR if value is undefined or empty string, first available alias in KeyStore is used.
+ * OR if type value is Stream, this Stream is interpreted as PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
+ * OR if value null, no client certificate is used.
  *
  * @return {Response} response HTTP response received.
  */
@@ -65,29 +68,36 @@ exports.request = function (params) {
 
     checkRequired(params, 'url');
 
-    bean.url = __.nullOrValue(params.url);
-    bean.params = __.nullOrValue(params.params);
-    bean.queryParams = __.nullOrValue(params.queryParams);
-    bean.method = __.nullOrValue(params.method);
-    bean.headers = __.nullOrValue(params.headers);
-    bean.connectionTimeout = __.nullOrValue(params.connectionTimeout);
-    bean.readTimeout = __.nullOrValue(params.readTimeout);
-    bean.body = __.nullOrValue(params.body);
-    bean.contentType = __.nullOrValue(params.contentType);
-    bean.multipart = __.nullOrValue(params.multipart);
-    bean.followRedirects = __.nullOrValue(params.followRedirects);
+    bean.setUrl(__.nullOrValue(params.url));
+    bean.setParams(__.nullOrValue(params.params));
+    bean.setQueryParams(__.nullOrValue(params.queryParams));
+    bean.setMethod(__.nullOrValue(params.method));
+    bean.setHeaders(__.nullOrValue(params.headers));
+    bean.setConnectionTimeout(__.nullOrValue(params.connectionTimeout));
+    bean.setReadTimeout(__.nullOrValue(params.readTimeout));
+    bean.setBody(__.nullOrValue(params.body));
+    bean.setContentType(__.nullOrValue(params.contentType));
+    bean.setMultipart(__.nullOrValue(params.multipart));
+    bean.setFollowRedirects(__.nullOrValue(params.followRedirects));
     if (params.proxy) {
-        bean.proxyHost = __.nullOrValue(params.proxy.host);
-        bean.proxyPort = __.nullOrValue(params.proxy.port);
-        bean.proxyUser = __.nullOrValue(params.proxy.user);
-        bean.proxyPassword = __.nullOrValue(params.proxy.password);
+        bean.setProxyHost(__.nullOrValue(params.proxy.host));
+        bean.setProxyPort(__.nullOrValue(params.proxy.port));
+        bean.setProxyUser(__.nullOrValue(params.proxy.user));
+        bean.setProxyPassword(__.nullOrValue(params.proxy.password));
     }
     if (params.auth) {
-        bean.authUser = __.nullOrValue(params.auth.user);
-        bean.authPassword = __.nullOrValue(params.auth.password);
+        bean.setAuthUser(__.nullOrValue(params.auth.user));
+        bean.setAuthPassword(__.nullOrValue(params.auth.password));
     }
-    bean.certificates = __.nullOrValue(params.certificates);
-    bean.clientCertificate = __.nullOrValue(params.clientCertificate);
+    bean.setCertificates(__.nullOrValue(params.certificates));
+
+    if (typeof params.clientCertificate === 'string') {
+        bean.setClientCertificateAlias(params.clientCertificate);
+    } else if (typeof params.clientCertificate === 'undefined') {
+        bean.setClientCertificateAlias('');
+    } else {
+        bean.setClientCertificate(params.clientCertificate);
+    }
     return __.toNativeObject(bean.request());
 
 };
