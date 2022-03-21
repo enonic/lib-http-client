@@ -11,6 +11,7 @@ import com.google.common.io.ByteSource;
 import com.google.common.primitives.Longs;
 
 import okhttp3.Authenticator;
+import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
@@ -112,6 +113,7 @@ public final class HttpRequestHandler
         clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
         clientBuilder.followRedirects( followRedirects );
         clientBuilder.followSslRedirects( followRedirects );
+        clientBuilder.connectionPool( new ConnectionPool( 0, 5, TimeUnit.MINUTES ) );
         setupProxy( clientBuilder );
         setupAuthentication( clientBuilder );
         setupCookieJar( clientBuilder );
@@ -270,6 +272,7 @@ public final class HttpRequestHandler
                 request.header( header.getKey(), header.getValue() );
             }
         }
+        request.header( "Connection", "close" );
     }
 
     private void setupCookieJar( final OkHttpClient.Builder clientBuilder )
