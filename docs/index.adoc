@@ -9,7 +9,7 @@ To start using this library, add the following into your `build.gradle` file:
 [source,groovy]
 ----
 dependencies {
-  include 'com.enonic.lib:lib-http-client:2.4.1'
+  include 'com.enonic.lib:lib-http-client:3.0.0'
 }
 ----
 
@@ -85,14 +85,14 @@ The request function takes a parameter object with options. The only mandatory o
 * `options` (_object_) Parameters to make the HTTP request.
 ** `*url*` (_string_) URL to which the request is sent.
 ** `*method*` (_string_) The HTTP method to use for the request (e.g. "POST", "GET", "HEAD", "PUT", "DELETE", "PATCH"). The default value is `"GET"`.
-** `*queryParams*` (_object_) [*v2.2.0+*] Query parameters to be sent with the request.
+** `*queryParams*` (_object_) Query parameters to be sent with the request.
 ** `*params*` (_object_) Form parameters to be sent with the request. Will not be used if `*queryParams*` is provided.
 ** `*headers*` (_object_) HTTP headers, an object where the keys are header names and the values the header values.
 ** `*connectionTimeout*` (_number_) The timeout on establishing the connection, in milliseconds. The default value is `10000`.
 ** `*readTimeout*` (_number_) The timeout on waiting to receive data, in milliseconds. The default value is `10000`.
-** `*body*` (_string_ | _object_) Body content to send with the request, usually for POST or PUT requests. It can be of type string or stream.
+** `*body*` (_string_ | _object_) Body content to send with the request, usually for POST or PUT requests. It can be of type string or stream.
 ** `*contentType*` (_string_) Content type of the request.
-** `*followRedirects*` (_boolean_) If set to `false`, redirect responses (status=`3xx`) will not trigger a new internal request, and the function will return directly with the `3xx` status. The default value `true`.
+** `*followRedirects*` (_boolean_) If set to `false`, redirect responses (status=`3xx`) will not trigger a new internal request, and the function will return directly with the `3xx` status. If `true`, redirects will be handled internally. Default is to handle redirects internally, but don't redirect from https to http.
 ** `*multipart*` (_object[]_) Multipart form data to send with the request, an array of part objects. Each part object contains 'name', 'value', and optionally 'fileName' and 'contentType' properties. Where 'value' can be either a string or a Stream object.
 ** `*auth*` (_object_) Settings for basic authentication.
 *** `*user*` (_string_) User name for basic authentication.
@@ -103,11 +103,7 @@ The request function takes a parameter object with options. The only mandatory o
 *** `*user*` (_string_) User name for proxy authentication.
 *** `*password*` (_string_) Password for proxy authentication.
 ** `*certificates*` (_*_) Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with a custom certificate.
-** `*clientCertificate*` (_string |_*_) [*v2.3.0+*]
-*** If value is `undefined` or empty string, first available alias in KeyStore is used. KeyStore specified by `com.enonic.lib.http.client.keyStore` system property. [*v2.4.0+*]
-*** If value is typeof `string` and not empty it is interpreted as alias name in KeyStore. [*v2.4.0+*]
-*** If type value is Stream, this Stream is interpreted as PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
-*** If value `null`, no client certificate is used.
+** `*clientCertificate*` (_*_) Stream of PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
 
 *Returns*
 
@@ -121,17 +117,18 @@ The function will return a `response` object with the following properties:
 * `*body*` (_string_) Body of the response as string. Null if the response content-type is not of type text.
 * `*bodyStream*` (_object_) Body of the response as a stream object.
 
-== KeyStore Configuration [*v2.4.0+*]
+== KeyStore and TrustStore Configuration [*v3.0.0+*]
 
-There are multiple system properties similar to Default JSSE KeyStore system properties https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html#GUID-7D9F43B8-AABF-4C5B-93E6-3AFB18B66150
-They allow to configure a KeyStore that stores a keypair to be used for mTLS authentication, if `clientCertificate` is not specified in the request options, or if `clientCertificate` is specified an alias name.
+Use JVM system properties to configure KeyStore and TrustSore:
+https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html#GUID-7D9F43B8-AABF-4C5B-93E6-3AFB18B66150
 
-* `com.enonic.lib.http.client.keyStore` Path to the KeyStore file. No KeyStore is used, if not specified.
-* `com.enonic.lib.http.client.keyStorePassword` KeyStore password.
-* `com.enonic.lib.http.client.keyStoreType` KeyStore type. Default is a value returned by `KeyStore.getDefaultType()`.
-* `com.enonic.lib.http.client.keyStoreProvider` KeyStore provider name.
+WARNING: If `certificates` is specified, library does not use default KeyStore for identity material.
+Either specify both `certificates` and `clientCertificate` or live both undefined to use Default Keystore and Truststore.
 
-NOTE: In case when `clientCertificate` is not specified (`undefined` or empty string) there must be only one alias in the KeyStore, and it must be an alias for a keypair with a certificate.
+== Compression
+
+The Library supports transparent `gzip` and `deflate` response body decompression.
+`Accept-Encoding` header is set by library and should not be provided in headers via API.
 
 == Examples
 
@@ -214,3 +211,14 @@ var response = httpClient.request({
 
 This library is not compatible with XP releases before version 7.0. Make sure you reference the lib as `/lib/http-client`
 and not as `/lib/xp/http-client` or `/site/lib/xp/http-client`.
+
+- Starting from version 3.0.0 library Uses Java HttpClient instead of OkHttp Client.
+It may introduce a few minor incompatibilities.
+For instance, Default User-Agent is now JVM vendor dependent.
+
+- Starting from version 3.0.0 library does not support Preemptive authentication.
+Use `Authorization: Basic <credentials>` header instead.
+
+- Starting from version 3.0.0 library uses Java Platform KeyStore.
+It is JVM vendor specific but in most cases it is specified by `javax.net.ssl.keyStore` system property.
+KeyStore Configuration is no longer applicable and `clientCertificate` can only be typeof Stream.

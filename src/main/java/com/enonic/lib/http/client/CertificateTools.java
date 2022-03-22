@@ -1,100 +1,65 @@
 package com.enonic.lib.http.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import com.google.common.io.ByteSource;
-
-import okhttp3.OkHttpClient;
-import okhttp3.tls.HandshakeCertificates;
-import okhttp3.tls.HeldCertificate;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
+import java.util.List;
 
 final class CertificateTools
 {
-    private final Collection<X509Certificate> certificates;
+    private static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
 
-    private final HeldCertificate clientCertificate;
+    private static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
 
-    private final String clientCertificateAlias;
+    private static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
 
-    public CertificateTools( final ByteSource certificates, final ByteSource clientCertificate, final String clientCertificateAlias )
+    private static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
+
+    private CertificateTools()
     {
-        if ( certificates != null )
-        {
-            try (InputStream certificatesStream = certificates.openStream())
-            {
-                final CertificateFactory certificateFactory = CertificateFactory.getInstance( "X.509" );
-                this.certificates = certificateFactory.generateCertificates( certificatesStream )
-                    .stream()
-                    .map( certificate -> (X509Certificate) certificate )
-                    .collect( Collectors.toList() );
-            }
-            catch ( GeneralSecurityException e )
-            {
-                throw new RuntimeException( e );
-            }
-            catch ( IOException e )
-            {
-                throw new UncheckedIOException( e );
-            }
-        }
-        else
-        {
-            this.certificates = null;
-        }
-
-        try
-        {
-            this.clientCertificate = clientCertificate == null
-                ? null
-                : HeldCertificate.decode( new String( clientCertificate.read(), StandardCharsets.ISO_8859_1 ) );
-        }
-        catch ( IOException e )
-        {
-            throw new UncheckedIOException( e );
-        }
-        this.clientCertificateAlias = clientCertificateAlias;
     }
 
-    public void setupHandshakeCertificates( final OkHttpClient.Builder clientBuilder )
+    public static List<Certificate> loadCertificates( final byte[] certificates )
     {
-        final HandshakeCertificates.Builder handshakeCertificatesBuilder = new HandshakeCertificates.Builder();
+        try
+        {
+            final CertificateFactory certificateFactory = CertificateFactory.getInstance( "X.509" );
+            return List.copyOf( certificateFactory.generateCertificates( new ByteArrayInputStream( certificates ) ) );
+        }
+        catch ( GeneralSecurityException e )
+        {
+            throw new RuntimeException( e );
+        }
+    }
 
-        if ( certificates != null )
+    public static CertWithKey loadClientCertificate( final byte[] clientCertificate )
+    {
+        try
         {
-            // Add custom CA certificates
-            certificates.forEach( handshakeCertificatesBuilder::addTrustedCertificate );
-        }
-        else
-        {
-            // Add default trusted CA certificates
-            handshakeCertificatesBuilder.addPlatformTrustedCertificates();
-        }
+            final String s = new String( clientCertificate, StandardCharsets.ISO_8859_1 );
+            String certPem = s.substring( s.indexOf( BEGIN_CERTIFICATE ) + BEGIN_CERTIFICATE.length(), s.indexOf( END_CERTIFICATE ) )
+                .replaceAll( "\n", "" );
+            String pkcs8Base64 = s.substring( s.indexOf( BEGIN_PRIVATE_KEY ) + BEGIN_PRIVATE_KEY.length(), s.indexOf( END_PRIVATE_KEY ) )
+                .replaceAll( "\n", "" );
+            final Certificate cert = CertificateFactory.getInstance( "X.509" )
+                .generateCertificate(
+                    new ByteArrayInputStream( Base64.getDecoder().decode( certPem.getBytes( StandardCharsets.ISO_8859_1 ) ) ) );
 
-        if ( clientCertificate != null )
-        {
-            // Add custom client key and certificate
-            handshakeCertificatesBuilder.heldCertificate( clientCertificate );
+            final Key key = KeyFactory.getInstance( cert.getPublicKey().getAlgorithm() )
+                .generatePrivate(
+                    new PKCS8EncodedKeySpec( Base64.getDecoder().decode( pkcs8Base64.getBytes( StandardCharsets.ISO_8859_1 ) ) ) );
+            return new CertWithKey( cert, key );
         }
-        else if ( clientCertificateAlias != null )
+        catch ( GeneralSecurityException e )
         {
-            // Use client key and certificate defined in keystore if available
-            final HeldCertificate certificate = KeyStoreLoader.get( clientCertificateAlias );
-            if ( certificate != null )
-            {
-                handshakeCertificatesBuilder.heldCertificate( certificate );
-            }
+            throw new RuntimeException( e );
         }
-
-        // Set certificates
-        final HandshakeCertificates handshakeCertificates = handshakeCertificatesBuilder.build();
-        clientBuilder.sslSocketFactory( handshakeCertificates.sslSocketFactory(), handshakeCertificates.trustManager() );
     }
 }

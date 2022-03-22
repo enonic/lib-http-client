@@ -1,9 +1,11 @@
 package com.enonic.lib.http.client;
 
-import java.net.SocketException;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.junit.After;
 import org.junit.Test;
+
+import com.google.common.base.Throwables;
 
 import okhttp3.mockwebserver.MockResponse;
 
@@ -25,46 +27,6 @@ public class SecureHttpRequestHandlerMTLSKeyStoreTest
         keyStorePath = setupKeyStore( keyStorePass );
     }
 
-    @After
-    public void clearTrustStore()
-    {
-        KeyStoreLoader.clearCache();
-        System.clearProperty( "com.enonic.lib.http.client.keyStore" );
-        System.clearProperty( "com.enonic.lib.http.client.keyStorePassword" );
-    }
-
-    @Test
-    public void withClientCertificateGetRequest()
-    {
-        KeyStoreLoader.clearCache();
-        System.setProperty( "com.enonic.lib.http.client.keyStore", keyStorePath );
-        System.setProperty( "com.enonic.lib.http.client.keyStorePassword", keyStorePass );
-
-        final MockResponse response = new MockResponse();
-        response.setBody( "GET request" );
-        response.setHeader( "content-type", "text/plain" );
-        server.enqueue( response );
-
-        runFunction( "/lib/test/secure-request-test.js", "withNoClientCertificatesGetRequest", server.url( "/my/url" ),
-                     serverCertificateBytes );
-    }
-
-    @Test
-    public void withClientCertificateAliasGetRequest()
-    {
-        KeyStoreLoader.clearCache();
-        System.setProperty( "com.enonic.lib.http.client.keyStore", keyStorePath );
-        System.setProperty( "com.enonic.lib.http.client.keyStorePassword", keyStorePass );
-
-        final MockResponse response = new MockResponse();
-        response.setBody( "GET request" );
-        response.setHeader( "content-type", "text/plain" );
-        server.enqueue( response );
-
-        runFunction( "/lib/test/secure-request-test.js", "withClientCertificateAliasGetRequest", server.url( "/my/url" ),
-                     serverCertificateBytes );
-    }
-
     @Test
     public void withNoClientCertificateGetRequest()
     {
@@ -74,9 +36,10 @@ public class SecureHttpRequestHandlerMTLSKeyStoreTest
         server.enqueue( response );
 
         Exception exception = assertThrows( RuntimeException.class,
-                                            () -> runFunction( "/lib/test/secure-request-test.js", "withNoClientCertificatesGetRequest",
+                                            () -> runFunction( "/lib/test/secure-request-test.js", "withCertificatesGetRequest",
                                                                server.url( "/my/url" ), serverCertificateBytes ) );
 
-        assertTrue( exception.getCause() instanceof SocketException );
+        assertTrue(
+            Throwables.getCausalChain( exception ).stream().map( Throwable::getClass ).anyMatch( c -> c == SSLHandshakeException.class ) );
     }
 }

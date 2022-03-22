@@ -1,9 +1,11 @@
 package com.enonic.lib.http.client;
 
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -14,6 +16,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
+import okio.Buffer;
 
 import com.enonic.xp.testing.ScriptTestSupport;
 import com.enonic.xp.trace.Trace;
@@ -50,7 +53,18 @@ public class HttpRequestHandlerTest
     public final void shutdown()
         throws Exception
     {
+        HttpClientFactory.clearCache();
         this.server.shutdown();
+    }
+
+    private MockResponse addResponse( final byte[] body, String contentType )
+        throws Exception
+    {
+        final MockResponse response = new MockResponse();
+        response.setBody( new Buffer().write( body ) );
+        response.setHeader( "content-type", contentType );
+        this.server.enqueue( response );
+        return response;
     }
 
     private MockResponse addResponse( final String body )
@@ -68,6 +82,7 @@ public class HttpRequestHandlerTest
     {
         final MockResponse response = new MockResponse();
         response.setBody( body );
+        response.setHeader( "content-type", "text/plain" );
         response.throttleBody( 0, millis, TimeUnit.MILLISECONDS );
         this.server.enqueue( response );
         return response;
@@ -179,6 +194,23 @@ public class HttpRequestHandlerTest
     }
 
     @Test
+    public void testPostImageRequest()
+        throws Exception
+    {
+        final byte[] bytes = new byte[(int) HttpRequestHandler.MAX_IN_MEMORY_BODY_STREAM_BYTES + 1]; // bypass in-memory limit
+        addResponse( bytes, "image/png" );
+
+        ThreadLocalRandom.current().nextBytes( bytes );
+        runFunction( "/lib/test/request-test.js", "postImageRequest", getServerHost(), ByteSource.wrap( bytes ) );
+
+        final RecordedRequest request = takeRequest();
+        assertEquals( "POST", request.getMethod() );
+        assertEquals( "/my/url", request.getPath() );
+        assertEquals( "image/png", request.getHeader( "content-type" ) );
+        assertArrayEquals( bytes, request.getBody().readByteArray() );
+    }
+
+    @Test
     public void testGetWithHeadersRequest()
         throws Exception
     {
@@ -191,11 +223,11 @@ public class HttpRequestHandlerTest
         assertEquals( "some-value", request.getHeader( "X-Custom-Header" ) );
     }
 
-    @Test
+    @Test(timeout = 20000)
     public void testReadTimeout()
         throws Exception
     {
-        addResponseWithDelay( "GET request", 2000 );
+        addResponseWithDelay( "GET request", 5000 );
 
         runFunction( "/lib/test/request-test.js", "getWithResponseTimeout", getServerHost() );
 
@@ -203,7 +235,8 @@ public class HttpRequestHandlerTest
         assertEquals( "GET", request.getMethod() );
     }
 
-    @Test
+    @Test(timeout = 20000)
+    @Ignore
     public void testConnectTimeout()
         throws Exception
     {
@@ -254,6 +287,7 @@ public class HttpRequestHandlerTest
 
             final MockResponse proxyAuthResponse = new MockResponse();
             proxyAuthResponse.setResponseCode( 407 );
+            proxyAuthResponse.setHeader( "Proxy-Authenticate", "Basic" );
             proxy.enqueue( proxyAuthResponse );
 
             final MockResponse response = new MockResponse();
@@ -297,21 +331,31 @@ public class HttpRequestHandlerTest
     {
         this.server.enqueue( addResponse( "POST request" ) );
         runScript( "/lib/examples/http-client/multipart.js" );
+        final RecordedRequest request = takeRequest();
+        assertTrue( request.getHeader( "content-type" ).startsWith( "multipart/mixed;" ) );
     }
 
     @Test
     public void testBasicAuthentication()
         throws Exception
     {
-        final MockResponse response = addResponse( "POST request" );
-        response.setResponseCode( 401 );
-        response.setHeader( "WWW-Authenticate", "Basic realm=\"foo\", charset=\"UTF-8\"" );
+        final MockResponse authResponse = new MockResponse();
+        authResponse.setResponseCode( 401 );
+        authResponse.setHeader( "WWW-Authenticate", "Basic realm=\"foo\", charset=\"UTF-8\"" );
+        this.server.enqueue( authResponse );
+
+        final MockResponse response = new MockResponse();
+        response.setBody( "GET request authenticated" );
+        response.setHeader( "content-type", "text/plain" );
         this.server.enqueue( response );
+
         runScript( "/lib/examples/http-client/basicauth.js" );
 
         final RecordedRequest request = takeRequest();
         assertEquals( "GET", request.getMethod() );
-        assertEquals( "Basic dXNlcm5hbWU6c2VjcmV0", request.getHeader( "Authorization" ) );
+
+        final RecordedRequest request2 = takeRequest();
+        assertEquals( "Basic dXNlcm5hbWU6c2VjcmV0", request2.getHeader( "Authorization" ) );
     }
 
     @Test
@@ -328,5 +372,27 @@ public class HttpRequestHandlerTest
         assertEquals( "GET", request.getMethod() );
         assertEquals( "/my/url", request.getPath() );
         assertEquals( "", request.getBody().readString( Charsets.UTF_8 ) );
+    }
+
+    @Test
+    public void testCookies()
+    {
+        final MockResponse response = new MockResponse();
+        response.setBody( "GET request" );
+        response.setHeader( "content-type", "text/plain" );
+        response.addHeader( "Set-Cookie", "a=b; Domain=example.com; Path=/docs; Secure; HttpOnly" );
+        this.server.enqueue( response );
+
+        runFunction( "/lib/test/request-test.js", "cookies", getServerHost() );
+    }
+
+    @Test
+    public void testRequestWithSoapResponse()
+    {
+        final MockResponse response = new MockResponse();
+        response.setHeader( "content-type", "application/soap+xml; charset=utf-8" );
+        response.setBody( "<?xml version=\"1.0\" encoding=\"utf-8\"?><body/>" );
+        this.server.enqueue( response );
+        runFunction( "/lib/test/request-test.js", "requestWithSoapResponse", getServerHost() );
     }
 }

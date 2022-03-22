@@ -18,6 +18,11 @@ var response = httpClientLib.request({
             value: myImageStream
         },
         {
+            name: 'media2',
+            value: myImageStream
+            //contentType and fileName are optional
+        },
+        {
             name: 'category',
             value: 'images'
         }

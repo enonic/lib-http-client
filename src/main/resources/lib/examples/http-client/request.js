@@ -27,7 +27,7 @@ var expected = {
     'body': 'POST request',
     'contentType': 'text/plain',
     'headers': {
-        'Content-Length': '12',
+        'content-length': '12',
         'content-type': 'text/plain'
     },
     "cookies": []

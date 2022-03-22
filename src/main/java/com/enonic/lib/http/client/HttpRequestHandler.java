@@ -1,39 +1,34 @@
 package com.enonic.lib.http.client;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
+import com.github.mizosoft.methanol.MoreBodySubscribers;
 import com.google.common.io.ByteSource;
-import com.google.common.primitives.Longs;
-
-import okhttp3.Authenticator;
-import okhttp3.ConnectionPool;
-import okhttp3.Credentials;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.internal.http.HttpMethod;
+import com.google.common.io.ByteStreams;
 
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.Tracer;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static java.util.Objects.requireNonNullElse;
 
 @SuppressWarnings("WeakerAccess")
 public final class HttpRequestHandler
 {
-    private final static int DEFAULT_PROXY_PORT = 8080;
+    private static final long DEFAULT_READ_TIMEOUT = 10_000;
 
-    static long MAX_IN_MEMORY_BODY_STREAM_BYTES = 10_000_000;
+    static final long MAX_IN_MEMORY_BODY_STREAM_BYTES = 10_000_000;
 
     private String url;
 
@@ -41,21 +36,23 @@ public final class HttpRequestHandler
 
     private Map<String, Object> queryParams;
 
-    private String method = "GET";
+    private String method;
 
     private Map<String, String> headers;
 
-    private int connectionTimeout = 10_000;
-
-    private int readTimeout = 10_000;
+    private Long readTimeout;
 
     private String contentType;
 
-    private String bodyString;
-
-    private ByteSource bodyStream;
+    private Object body;
 
     private List<Map<String, Object>> multipart;
+
+    private Long connectionTimeout;
+
+    private String authUser;
+
+    private String authPassword;
 
     private String proxyHost;
 
@@ -65,313 +62,118 @@ public final class HttpRequestHandler
 
     private String proxyPassword;
 
-    private String authUser;
-
-    private String authPassword;
-
-    private boolean followRedirects = true;
-
-    private CookieJar cookieJar;
-
-    private Trace trace;
+    private Boolean followRedirects;
 
     private ByteSource certificates;
 
     private ByteSource clientCertificate;
 
-    private String clientCertificateAlias;
-
     @SuppressWarnings("unused")
     public ResponseMapper request()
         throws Exception
     {
-        startTracing();
-        if ( this.trace == null )
+        final Trace trace = startTracing();
+        final HttpResponse<Supplier<ByteSource>> response = Tracer.traceEx( trace, this::executeRequest );
+        endTracing( trace, response );
+
+        return new ResponseMapper( response );
+    }
+
+    private HttpResponse<Supplier<ByteSource>> executeRequest()
+        throws IOException, InterruptedException
+    {
+        final HttpRequest request = HttpRequestFactory.getHttpRequest( HttpRequestFactory.params()
+                                                                           .method( method )
+                                                                           .url( url )
+                                                                           .headers( headers )
+                                                                           .contentType( contentType )
+                                                                           .form( params )
+                                                                           .queryParams( queryParams )
+                                                                           .body( body )
+                                                                           .multipart( multipart )
+                                                                           .build() );
+
+        final HttpClient client = HttpClientFactory.getHttpClient( HttpClientFactory.params()
+                                                                       .connectTimeout( connectionTimeout )
+                                                                       .authUser( authUser )
+                                                                       .authPassword( authPassword )
+                                                                       .proxyUser( proxyUser )
+                                                                       .proxyPassword( proxyPassword )
+                                                                       .proxyHost( proxyHost )
+                                                                       .proxyPort( proxyPort )
+                                                                       .followRedirects( followRedirects )
+                                                                       .certificates( certificates )
+                                                                       .clientCertificate( clientCertificate )
+                                                                       .build() );
+
+        return client.send( request, mapToFullyReadByteSource( request.method(), MoreBodySubscribers.withReadTimeout(
+            HttpResponse.BodySubscribers.ofInputStream(),
+            Duration.ofMillis( requireNonNullElse( readTimeout, DEFAULT_READ_TIMEOUT ) ) ) ) );
+    }
+
+    private Trace startTracing()
+    {
+        final Trace trace = Tracer.newTrace( "httpClient" );
+        if ( trace == null )
         {
-            return executeRequest();
+            return null;
+        }
+        trace.put( "traceName", "HttpClient" );
+        trace.put( "url", url );
+        trace.put( "method", method );
+        return trace;
+    }
+
+    private void endTracing( final Trace trace, final HttpResponse<?> response )
+    {
+        if ( trace == null )
+        {
+            return;
         }
 
-        return Tracer.traceEx( trace, this::executeRequest );
-    }
-
-    private ResponseMapper executeRequest()
-        throws IOException
-    {
-        final Response response = sendRequest( getRequest() );
-        endTracing( response );
-        return new ResponseMapper( response, cookieJar );
-    }
-
-    private Response sendRequest( final Request request )
-        throws IOException
-    {
-        final OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-
-        new CertificateTools( certificates, clientCertificate, clientCertificateAlias ).setupHandshakeCertificates( clientBuilder );
-
-        clientBuilder.readTimeout( this.readTimeout, TimeUnit.MILLISECONDS );
-        clientBuilder.connectTimeout( this.connectionTimeout, TimeUnit.MILLISECONDS );
-        clientBuilder.followRedirects( followRedirects );
-        clientBuilder.followSslRedirects( followRedirects );
-        clientBuilder.connectionPool( new ConnectionPool( 0, 5, TimeUnit.MINUTES ) );
-        setupProxy( clientBuilder );
-        setupAuthentication( clientBuilder );
-        setupCookieJar( clientBuilder );
-
-        return clientBuilder.build().newCall( request ).execute();
-    }
-
-    private Request getRequest()
-        throws IOException
-    {
-        final Request.Builder request = new Request.Builder();
-        request.url( this.url );
-
-        if ( queryParams == null )
+        trace.put( "method", response.request().method() );
+        trace.put( "status", response.statusCode() );
+        trace.put( "type", response.headers().firstValue( "content-type" ).orElse( null ) );
+        final long contentLength = Utils.getContentLength( response.headers() );
+        if ( contentLength >= 0 )
         {
-            // for backwards compatibility with older versions which don't support queryParams
-            if ( HttpMethod.permitsRequestBody( this.method ) )
+            trace.put( "size", contentLength );
+        }
+    }
+
+    public static HttpResponse.BodyHandler<Supplier<ByteSource>> mapToFullyReadByteSource( final String requestMethod,
+                                                                                           final HttpResponse.BodySubscriber<InputStream> upstream )
+    {
+        return responseInfo -> HttpResponse.BodySubscribers.mapping( upstream, is -> () -> {
+            Long length = "HEAD".equals( requestMethod ) ? null : Utils.expectBodyOfLength( responseInfo );
+
+            try (InputStream body = is)
             {
-                RequestBody requestBody = createRequestBody();
-                request.method( this.method, requestBody );
-            }
-            else
-            {
-                HttpUrl url = HttpUrl.parse( this.url );
-                if ( this.params != null )
+                if ( length == null || length.equals( 0L ) )
                 {
-                    url = addParams( url, this.params );
+                    return ByteSource.empty();
                 }
-                request.url( url );
 
-                request.method( this.method, null );
-            }
-        }
-        else
-        {
-            HttpUrl url = HttpUrl.parse( this.url );
+                final boolean unlimitedBodyLength = length == -1;
 
-            if ( url != null )
-            {
-                url = addParams( url, queryParams );
-                request.url( url );
-            }
+                final InputStream bodyStream = unlimitedBodyLength ? body : ByteStreams.limit( body, length );
 
-            if ( HttpMethod.permitsRequestBody( this.method ) )
-            {
-                RequestBody requestBody = createRequestBody();
-                request.method( this.method, requestBody );
-            }
-            else
-            {
-                request.method( this.method, null );
-            }
-        }
-
-        addHeaders( request, this.headers );
-        addAuthHeaders( request );
-        return request.build();
-    }
-
-    private RequestBody createRequestBody()
-        throws IOException
-    {
-        RequestBody requestBody = null;
-        if ( this.params != null && !this.params.isEmpty() )
-        {
-            final FormBody.Builder formBody = new FormBody.Builder();
-            addParams( formBody, this.params );
-            requestBody = formBody.build();
-        }
-        else if ( this.bodyString != null && !this.bodyString.isEmpty() )
-        {
-            final MediaType mediaType = this.contentType != null ? MediaType.parse( this.contentType ) : null;
-            requestBody = RequestBody.create( mediaType, this.bodyString );
-        }
-        else if ( this.bodyStream != null )
-        {
-            final MediaType mediaType = this.contentType != null ? MediaType.parse( this.contentType ) : null;
-            requestBody = RequestBody.create( mediaType, this.bodyStream.read() );
-        }
-        else if ( this.multipart != null )
-        {
-            requestBody = getMultipartBody();
-        }
-        else if ( HttpMethod.requiresRequestBody( this.method ) )
-        {
-            final MediaType mediaType = this.contentType != null ? MediaType.parse( this.contentType ) : null;
-            requestBody = RequestBody.create( mediaType, "" );
-        }
-
-        return requestBody;
-    }
-
-    private RequestBody getMultipartBody()
-        throws IOException
-    {
-        final MultipartBody.Builder multipartBuilder = new MultipartBody.Builder().setType( MultipartBody.FORM );
-
-        for ( Map<String, Object> multipartItem : this.multipart )
-        {
-            final String name = getValue( multipartItem, "name" );
-            final String fileName = getValue( multipartItem, "fileName" );
-            final String contentType = getValue( multipartItem, "contentType" );
-            final Object value = multipartItem.get( "value" );
-            if ( isBlank( name ) || value == null )
-            {
-                continue;
-            }
-
-            if ( value instanceof ByteSource )
-            {
-                final ByteSource stream = (ByteSource) value;
-                final String ct = contentType == null ? "application/octet-stream" : contentType;
-                final MediaType partMediaType = MediaType.parse( ct );
-                final byte[] content = stream.read();
-                final RequestBody body = RequestBody.create( partMediaType, content );
-                multipartBuilder.addFormDataPart( name, fileName, body );
-            }
-            else
-            {
-                multipartBuilder.addFormDataPart( name, value.toString() );
-            }
-        }
-        return multipartBuilder.build();
-    }
-
-    private String getValue( final Map<String, Object> object, final String key )
-    {
-        final Object value = object.get( key );
-        return value == null ? null : value.toString();
-    }
-
-    private HttpUrl addParams( final HttpUrl url, final Map<String, Object> params )
-    {
-        HttpUrl.Builder urlBuilder = url.newBuilder();
-        params.entrySet()
-            .stream()
-            .filter( param -> param.getValue() != null )
-            .forEach( param -> urlBuilder.addEncodedQueryParameter( param.getKey(), param.getValue().toString() ) );
-        return urlBuilder.build();
-    }
-
-    private void addParams( final FormBody.Builder formBody, final Map<String, Object> params )
-    {
-        params.entrySet()
-            .stream()
-            .filter( param -> param.getValue() != null )
-            .forEach( param -> formBody.add( param.getKey(), param.getValue().toString() ) );
-    }
-
-    private void addHeaders( final Request.Builder request, final Map<String, String> headers )
-    {
-        if ( headers != null )
-        {
-            for ( Map.Entry<String, String> header : headers.entrySet() )
-            {
-                request.header( header.getKey(), header.getValue() );
-            }
-        }
-        request.header( "Connection", "close" );
-    }
-
-    private void setupCookieJar( final OkHttpClient.Builder clientBuilder )
-    {
-        this.cookieJar = new CookieJar();
-        clientBuilder.cookieJar( this.cookieJar );
-    }
-
-    private void setupProxy( final OkHttpClient.Builder client )
-    {
-        if ( proxyHost == null || proxyHost.trim().isEmpty() )
-        {
-            return;
-        }
-        int proxyPort = this.proxyPort == null ? DEFAULT_PROXY_PORT : this.proxyPort;
-        client.proxy( new Proxy( Proxy.Type.HTTP, new InetSocketAddress( proxyHost, proxyPort ) ) );
-    }
-
-    private void setupAuthentication( final OkHttpClient.Builder client )
-    {
-        final String authUser = this.authUser;
-        final String authPassword = this.authPassword;
-        final String proxyUser = this.proxyUser;
-        final String proxyPassword = this.proxyPassword;
-
-        if ( ( proxyUser == null || proxyUser.isEmpty() ) && ( authUser == null || authUser.isEmpty() ) )
-        {
-            return;
-        }
-
-        Authenticator authenticator = ( route, response ) -> {
-            if ( authUser == null || authUser.trim().isEmpty() )
-            {
-                return null;
-            }
-            String credential = Credentials.basic( authUser, authPassword );
-            if ( credential.equals( response.request().header( "Authorization" ) ) )
-            {
-                return null; // If we already failed with these credentials, don't retry
-            }
-            return response.request().newBuilder().header( "Authorization", credential ).build();
-        };
-
-        Authenticator proxyAuthenticator = ( route, response ) -> {
-            if ( proxyUser == null || proxyUser.trim().isEmpty() )
-            {
-                return null;
-            }
-            String credential = Credentials.basic( proxyUser, proxyPassword );
-            return response.request().newBuilder().header( "Proxy-Authorization", credential ).build();
-        };
-
-        client.authenticator( authenticator );
-        client.proxyAuthenticator( proxyAuthenticator );
-    }
-
-
-    private void addAuthHeaders( final Request.Builder request )
-    {
-        if ( authUser != null && authPassword != null )
-        {
-            String credential = Credentials.basic( authUser, authPassword );
-            request.header( "Authorization", credential ).build();
-        }
-    }
-
-    private void startTracing()
-    {
-        this.trace = Tracer.newTrace( "httpClient" );
-        if ( this.trace == null )
-        {
-            return;
-        }
-        this.trace.put( "traceName", "HttpClient" );
-        this.trace.put( "url", this.url );
-        this.trace.put( "method", this.method );
-    }
-
-    private void endTracing( final Response response )
-    {
-        if ( this.trace == null )
-        {
-            return;
-        }
-
-        if ( response != null )
-        {
-            this.trace.put( "status", response.code() );
-            this.trace.put( "type", response.header( "Content-Type" ) );
-            final String contentLength = response.header( "Content-Length" );
-            if ( contentLength != null )
-            {
-                final Long length = Longs.tryParse( contentLength );
-                if ( length != null )
+                if ( unlimitedBodyLength || length > MAX_IN_MEMORY_BODY_STREAM_BYTES )
                 {
-                    this.trace.put( "size", length );
+                    final Path tempFile = Files.createTempFile( "xphttp", ".tmp" );
+                    Files.copy( bodyStream, tempFile, StandardCopyOption.REPLACE_EXISTING );
+                    return new RefPathByteSource( tempFile );
+                }
+                else
+                {
+                    return ByteSource.wrap( bodyStream.readAllBytes() );
                 }
             }
-        }
+            catch ( IOException e )
+            {
+                throw new UncheckedIOException( e.getMessage(), e );
+            }
+        } );
     }
 
     @SuppressWarnings("unused")
@@ -383,20 +185,7 @@ public final class HttpRequestHandler
     @SuppressWarnings("unused")
     public void setBody( final Object value )
     {
-        this.bodyStream = null;
-        this.bodyString = null;
-        if ( value == null )
-        {
-            return;
-        }
-        if ( value instanceof ByteSource )
-        {
-            this.bodyStream = (ByteSource) value;
-        }
-        else
-        {
-            this.bodyString = value.toString();
-        }
+        this.body = value;
     }
 
     @SuppressWarnings("unused")
@@ -426,28 +215,19 @@ public final class HttpRequestHandler
     @SuppressWarnings("unused")
     public void setMethod( final String value )
     {
-        if ( value != null )
-        {
-            this.method = value.trim().toUpperCase();
-        }
+        this.method = value;
     }
 
     @SuppressWarnings("unused")
-    public void setConnectionTimeout( final Integer value )
+    public void setConnectionTimeout( final Long value )
     {
-        if ( value != null )
-        {
-            this.connectionTimeout = value;
-        }
+        this.connectionTimeout = value;
     }
 
     @SuppressWarnings("unused")
-    public void setReadTimeout( final Integer value )
+    public void setReadTimeout( final Long value )
     {
-        if ( value != null )
-        {
-            this.readTimeout = value;
-        }
+        this.readTimeout = value;
     }
 
     @SuppressWarnings("unused")
@@ -495,10 +275,7 @@ public final class HttpRequestHandler
     @SuppressWarnings("unused")
     public void setFollowRedirects( final Boolean followRedirects )
     {
-        if ( followRedirects != null )
-        {
-            this.followRedirects = followRedirects;
-        }
+        this.followRedirects = followRedirects;
     }
 
     @SuppressWarnings("unused")
@@ -511,11 +288,5 @@ public final class HttpRequestHandler
     public void setClientCertificate( final ByteSource clientCertificate )
     {
         this.clientCertificate = clientCertificate;
-    }
-
-    @SuppressWarnings("unused")
-    public void setClientCertificateAlias( final String clientCertificateAlias )
-    {
-        this.clientCertificateAlias = clientCertificateAlias;
     }
 }
