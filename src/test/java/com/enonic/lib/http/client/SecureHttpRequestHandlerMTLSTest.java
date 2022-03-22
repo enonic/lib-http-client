@@ -1,8 +1,10 @@
 package com.enonic.lib.http.client;
 
-import java.net.SocketException;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.junit.Test;
+
+import com.google.common.base.Throwables;
 
 import okhttp3.mockwebserver.MockResponse;
 
@@ -29,7 +31,7 @@ public class SecureHttpRequestHandlerMTLSTest
 
         runFunction(
             "/lib/test/secure-request-test.js",
-            "withClientCertificatesGetRequest",
+            "withCertificatesGetRequest",
             server.url( "/my/url" ),
             serverCertificateBytes,
             clientCertificateBytes
@@ -46,11 +48,11 @@ public class SecureHttpRequestHandlerMTLSTest
 
         Exception exception = assertThrows(RuntimeException.class, () -> runFunction(
             "/lib/test/secure-request-test.js",
-            "withNoClientCertificatesGetRequest",
+            "withCertificatesGetRequest",
             server.url( "/my/url" ),
             serverCertificateBytes
         ));
 
-        assertTrue( exception.getCause() instanceof SocketException );
+        assertTrue( Throwables.getCausalChain( exception ).stream().map( Throwable::getClass ).anyMatch( c -> c == SSLHandshakeException.class )  );
     }
 }

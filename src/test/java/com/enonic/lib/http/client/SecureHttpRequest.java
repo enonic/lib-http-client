@@ -90,6 +90,7 @@ public class SecureHttpRequest extends ScriptTestSupport
     public void tearDown()
         throws Exception
     {
+        HttpClientFactory.clearCache();
         server.shutdown();
     }
 
@@ -109,7 +110,7 @@ public class SecureHttpRequest extends ScriptTestSupport
     protected String setupKeyStore( String password )
         throws Exception
     {
-        File keystoreFile = tempFolder.newFile("tmpTrustStore");
+        File keystoreFile = tempFolder.newFile("tmpKeyStore");
 
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(null, null);

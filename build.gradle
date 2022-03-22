@@ -13,10 +13,11 @@ ext {
 dependencies {
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
-    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    implementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
+    implementation 'com.github.mizosoft.methanol:methanol:1.6.0'
+    implementation 'io.github.hakky54:sslcontext-kickstart:7.3.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.mockito:mockito-core:4.4.0"
+    testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.enonic.xp:testing:${xpVersion}"
 }

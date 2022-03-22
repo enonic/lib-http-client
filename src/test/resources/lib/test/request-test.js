@@ -13,7 +13,7 @@ exports.simpleGetRequest = function (mockServer) {
         "body": "GET request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "11",
+            "content-length": "11",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -37,7 +37,7 @@ exports.simplePostRequest = function (mockServer) {
         "body": "POST request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "12",
+            "content-length": "12",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -61,7 +61,7 @@ exports.simplePatchRequest = function (mockServer) {
         "body": "PATCH request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "13",
+            "content-length": "13",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -83,7 +83,7 @@ exports.simpleHeadRequest = function (mockServer) {
         "body": "",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "11",
+            "content-length": "11",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -111,7 +111,7 @@ exports.getRequestWithParams = function (mockServer) {
         "body": "GET request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "11",
+            "content-length": "11",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -144,7 +144,7 @@ exports.postRequestWithParams = function (mockServer) {
         "body": "POST request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "12",
+            "content-length": "12",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -170,7 +170,7 @@ exports.postJsonRequest = function (mockServer) {
         "body": "POST request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "12",
+            "content-length": "12",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -180,6 +180,30 @@ exports.postJsonRequest = function (mockServer) {
 
 };
 
+exports.postImageRequest = function (mockServer, byteSource) {
+
+    var result = http.request({
+        url: 'http://' + mockServer + '/my/url',
+        method: 'post',
+        contentType: 'image/png',
+        body: byteSource
+    });
+
+
+    var expectedJson = {
+        "status": 200,
+        "message": "OK",
+        "contentType": "image/png",
+        "headers": {
+            "content-length": "10000001",
+            "content-type": "image/png"
+        },
+        "cookies": []
+    };
+
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
+
+};
 exports.getWithHeadersRequest = function (mockServer) {
 
     var result = http.request({
@@ -196,7 +220,7 @@ exports.getWithHeadersRequest = function (mockServer) {
         "body": "GET request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "11",
+            "content-length": "11",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -218,8 +242,7 @@ exports.getWithResponseTimeout = function (mockServer) {
         assert.assertTrue(false, 'Expected exception');
 
     } catch (e) {
-        var expectedResult = ("timeout" == e.message) || ("Read timed out" == e.message);
-        assert.assertTrue(expectedResult, 'Expected exception');
+        assert.assertEquals("closed", e.message);
     }
 };
 
@@ -234,8 +257,7 @@ exports.getWithConnectTimeout = function (mockServer) {
         assert.assertTrue(false, 'Expected exception');
 
     } catch (e) {
-        var expectedResult = ("timeout" == e.message) || ("Read timed out" == e.message);
-        assert.assertTrue(expectedResult, 'Expected exception');
+        assert.assertEquals("request timed out", e.message);
     }
 
 };
@@ -259,7 +281,7 @@ exports.requestWithProxy = function (mockServer, proxyHost, proxyPort) {
         "body": "POST request",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "12",
+            "content-length": "12",
             "content-type": "text/plain"
         },
         "cookies": []
@@ -288,12 +310,66 @@ exports.requestWithProxyAuth = function (mockServer, proxyHost, proxyPort) {
         "body": "POST request authenticated",
         "contentType": "text/plain",
         "headers": {
-            "Content-Length": "26",
+            "content-length": "26",
             "content-type": "text/plain"
         },
         "cookies": []
     };
 
     assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
+
+};
+
+exports.cookies = function (mockServer) {
+
+    var result = http.request({
+        url: 'http://' + mockServer + '/my/url',
+        method: 'GET'
+    });
+
+    var expectedJson = {
+        'status': 200,
+        'message': 'OK',
+        'body': 'GET request',
+        "contentType": "text/plain",
+        'headers': {
+            'content-length': '11',
+            'content-type': 'text/plain',
+            'set-cookie': "a=b; Domain=example.com; Path=/docs; Secure; HttpOnly"
+        },
+        'cookies': [{
+            'name': 'a',
+            'value': 'b',
+            'path': '/docs',
+            'domain': 'example.com',
+            'secure': true,
+            'httpOnly': true
+        }]
+    };
+
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
+};
+
+exports.requestWithSoapResponse = function (mockServer) {
+
+    var result = http.request({
+        url: 'http://' + mockServer + '/my/url',
+        method: 'get',
+    });
+
+    var expectedJson = {
+        'status': 200,
+        'message': 'OK',
+        'body': '<?xml version="1.0" encoding="utf-8"?><body/>',
+        'contentType': 'application/soap+xml; charset=utf-8',
+        'headers': {
+            'content-length': '45',
+            'content-type': 'application/soap+xml; charset=utf-8'
+        },
+        'cookies': []
+    };
+
+    assert.assertJsonEquals(expectedJson, result, 'http.request result not equals');
+    assert.assertNotNull(result.bodyStream, 'http.request stream body null');
 
 };

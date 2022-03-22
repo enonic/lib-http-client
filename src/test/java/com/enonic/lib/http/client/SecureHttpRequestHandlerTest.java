@@ -7,6 +7,7 @@ import javax.net.ssl.SSLHandshakeException;
 
 import org.junit.Test;
 
+import com.google.common.base.Throwables;
 import com.google.common.io.ByteSource;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -33,12 +34,7 @@ public class SecureHttpRequestHandlerTest
         response.setHeader( "content-type", "text/plain" );
         server.enqueue( response );
 
-        runFunction(
-            "/lib/test/secure-request-test.js",
-            "withCertificatesGetRequest",
-            server.url( "/my/url" ),
-            serverCertificateBytes
-        );
+        runFunction( "/lib/test/secure-request-test.js", "withCertificatesGetRequest", server.url( "/my/url" ), serverCertificateBytes );
     }
 
     @Test
@@ -51,20 +47,18 @@ public class SecureHttpRequestHandlerTest
         server.enqueue( response );
 
         // Create come invalid server certificate
-        HeldCertificate invalidServerCertificate = new HeldCertificate.Builder()
-                .commonName("server")
-                .addSubjectAlternativeName(InetAddress.getByName( "localhost" ).getCanonicalHostName())
-                .build();
-        ByteSource invalidServerCertificateBytes = ByteSource.wrap(invalidServerCertificate
-                .certificatePem().getBytes( StandardCharsets.ISO_8859_1 ));
+        HeldCertificate invalidServerCertificate = new HeldCertificate.Builder().commonName( "server" )
+            .addSubjectAlternativeName( InetAddress.getByName( "localhost" ).getCanonicalHostName() )
+            .build();
+        ByteSource invalidServerCertificateBytes =
+            ByteSource.wrap( invalidServerCertificate.certificatePem().getBytes( StandardCharsets.ISO_8859_1 ) );
 
-        Exception exception = assertThrows(RuntimeException.class, () -> runFunction(
-            "/lib/test/secure-request-test.js",
-            "withCertificatesGetRequest",
-            server.url( "/my/url" ),
-            invalidServerCertificateBytes
-        ));
+        Exception exception = assertThrows( RuntimeException.class,
+                                            () -> runFunction( "/lib/test/secure-request-test.js", "withCertificatesGetRequest",
+                                                               server.url( "/my/url" ), invalidServerCertificateBytes ) );
 
-        assertEquals(exception.getCause().getClass(), SSLHandshakeException.class);
+        assertTrue(
+            Throwables.getCausalChain( exception ).stream().map( Throwable::getClass ).anyMatch( c -> c == SSLHandshakeException.class ) );
     }
+
 }
