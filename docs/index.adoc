@@ -215,7 +215,7 @@ var response = httpClient.request({
 
 == Compatibility
 
-This library is not compatible with XP releases before version 7.0. Make sure you reference the lib as `/lib/http-client`
+- This library is not compatible with XP releases before version 7.0. Make sure you reference the lib as `/lib/http-client`
 and not as `/lib/xp/http-client` or `/site/lib/xp/http-client`.
 
 - Starting from version 3.0.0 library Uses Java HttpClient instead of OkHttp Client.
