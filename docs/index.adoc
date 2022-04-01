@@ -130,6 +130,12 @@ Either specify both `certificates` and `clientCertificate` or live both undefine
 The Library supports transparent `gzip` and `deflate` response body decompression.
 `Accept-Encoding` header is set by library and should not be provided in headers via API.
 
+== Compression
+
+The Library transparent `gzip` and `deflate` response body decompression.
+`Accept-Encoding` header is set by library and should not be provided in headers via API.
+
+
 == Examples
 
 === `Basic Authentication`
