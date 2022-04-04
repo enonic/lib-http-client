@@ -9,7 +9,7 @@ To start using this library, add the following into your `build.gradle` file:
 [source,groovy]
 ----
 dependencies {
-  include 'com.enonic.lib:lib-http-client:2.1.2'
+  include 'com.enonic.lib:lib-http-client:2.4.1'
 }
 ----
 
