@@ -123,7 +123,7 @@ Use JVM system properties to configure KeyStore and TrustSore:
 https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html#GUID-7D9F43B8-AABF-4C5B-93E6-3AFB18B66150
 
 WARNING: If `certificates` is specified, library does not use default KeyStore for identity material.
-Either specify both `certificates` and `clientCertificate` or live both undefined to use Default Keystore and Truststore.
+Either specify both `certificates` and `clientCertificate` or leave both undefined to use Default Keystore and Truststore.
 
 == Compression
 
