@@ -29,7 +29,7 @@ class HttpRequestFactory
     {
         private final String method;
 
-        private final String url;
+        private final URI uri;
 
         private final Map<String, String> form;
 
@@ -49,7 +49,7 @@ class HttpRequestFactory
         {
             this.method = requireNonNullElse( builder.method, "GET" ).trim().toUpperCase( Locale.ROOT );
             this.formIsQueryParams = "GET".equals( this.method ) || "HEAD".equals( this.method );
-            this.url = requireNonNull( builder.url );
+            this.uri = URI.create( requireNonNull(builder.url) );
             this.form = builder.form == null
                 ? null
                 : toStringStringMap(builder.form);
@@ -156,15 +156,15 @@ class HttpRequestFactory
         final URI uri;
         if ( params.queryParams != null )
         {
-            uri = Utils.addQueryParams( URI.create( params.url ), params.queryParams );
+            uri = Utils.addQueryParams( params.uri, params.queryParams );
         }
         else if ( params.form != null && params.formIsQueryParams )
         {
-            uri = Utils.addQueryParams( URI.create( params.url ), params.form );
+            uri = Utils.addQueryParams( params.uri, params.form );
         }
         else
         {
-            uri = URI.create( params.url );
+            uri = params.uri;
         }
         final HttpRequest.Builder request = HttpRequest.newBuilder( uri );
 

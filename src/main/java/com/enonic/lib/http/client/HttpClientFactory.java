@@ -56,9 +56,13 @@ class HttpClientFactory
 
         final byte[] clientCertificate;
 
+        final boolean disableHttp2;
+
         private ClientParams( final Builder builder )
             throws IOException
         {
+            this.disableHttp2 = builder.disableHttp2;
+
             this.connectTimeout = Duration.ofMillis( requireNonNullElse( builder.connectTimeout, DEFAULT_CONNECT_TIMEOUT_MS ) );
 
             if ( !requireNonNullElse( builder.authUser, "" ).isEmpty() && builder.authPassword != null )
@@ -103,6 +107,8 @@ class HttpClientFactory
             {
             }
 
+            private boolean disableHttp2;
+
             private Long connectTimeout;
 
             private String authUser;
@@ -122,6 +128,12 @@ class HttpClientFactory
             private ByteSource clientCertificate;
 
             private ByteSource certificates;
+
+            Builder disableHttp2( final boolean secure )
+            {
+                this.disableHttp2 = secure;
+                return this;
+            }
 
             Builder connectTimeout( final Long connectTimeout )
             {
@@ -211,6 +223,8 @@ class HttpClientFactory
     {
         final Hasher hasher = Hashing.sha512().newHasher();
 
+        hasher.putBoolean( params.disableHttp2 );
+
         hasher.putLong( params.connectTimeout.toMillis() );
 
         if ( params.serverAuth != null )
@@ -259,6 +273,10 @@ class HttpClientFactory
     {
         final var clientBuilder = Methanol.newBuilder();
         clientBuilder.connectTimeout( params.connectTimeout );
+        if ( params.disableHttp2 )
+        {
+            clientBuilder.version( HttpClient.Version.HTTP_1_1 );
+        }
         clientBuilder.followRedirects( params.followRedirects );
         clientBuilder.executor( SHARED_WORKERS_EXECUTOR );
         setupProxy( params, clientBuilder );

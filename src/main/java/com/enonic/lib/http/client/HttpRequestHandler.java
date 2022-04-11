@@ -94,6 +94,7 @@ public final class HttpRequestHandler
                                                                            .build() );
 
         final HttpClient client = HttpClientFactory.getHttpClient( HttpClientFactory.params()
+                                                                       .disableHttp2( !url.startsWith( "https://" ) )
                                                                        .connectTimeout( connectionTimeout )
                                                                        .authUser( authUser )
                                                                        .authPassword( authPassword )
