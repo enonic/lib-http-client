@@ -10,13 +10,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import com.github.mizosoft.methanol.MoreBodySubscribers;
 import com.google.common.io.ByteSource;
-import com.google.common.io.ByteStreams;
 
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.Tracer;
@@ -107,9 +108,9 @@ public final class HttpRequestHandler
                                                                        .clientCertificate( clientCertificate )
                                                                        .build() );
 
-        return client.send( request, mapToFullyReadByteSource( request.method(), MoreBodySubscribers.withReadTimeout(
-            HttpResponse.BodySubscribers.ofInputStream(),
-            Duration.ofMillis( requireNonNullElse( readTimeout, DEFAULT_READ_TIMEOUT ) ) ) ) );
+        return client.send( request, mapToFullyReadByteSource(
+            MoreBodySubscribers.withReadTimeout( HttpResponse.BodySubscribers.ofInputStream(),
+                                                 Duration.ofMillis( requireNonNullElse( readTimeout, DEFAULT_READ_TIMEOUT ) ) ) ) );
     }
 
     private Trace startTracing()
@@ -142,32 +143,27 @@ public final class HttpRequestHandler
         }
     }
 
-    public static HttpResponse.BodyHandler<Supplier<ByteSource>> mapToFullyReadByteSource( final String requestMethod,
-                                                                                           final HttpResponse.BodySubscriber<InputStream> upstream )
+    public static HttpResponse.BodyHandler<Supplier<ByteSource>> mapToFullyReadByteSource(
+        final HttpResponse.BodySubscriber<InputStream> upstream )
     {
         return responseInfo -> HttpResponse.BodySubscribers.mapping( upstream, is -> () -> {
-            Long length = "HEAD".equals( requestMethod ) ? null : Utils.expectBodyOfLength( responseInfo );
-
             try (InputStream body = is)
             {
-                if ( length == null || length.equals( 0L ) )
+                final BufferedBytesProcessor processor = BufferedBytesProcessor.read( body );
+
+                if ( processor.totalRead == 0 )
                 {
                     return ByteSource.empty();
                 }
-
-                final boolean unlimitedBodyLength = length == -1;
-
-                final InputStream bodyStream = unlimitedBodyLength ? body : ByteStreams.limit( body, length );
-
-                if ( unlimitedBodyLength || length > MAX_IN_MEMORY_BODY_STREAM_BYTES )
+                else if ( processor.readFully )
                 {
-                    final Path tempFile = Files.createTempFile( "xphttp", ".tmp" );
-                    Files.copy( bodyStream, tempFile, StandardCopyOption.REPLACE_EXISTING );
-                    return new RefPathByteSource( tempFile );
+                    return ByteSource.concat( processor.chunks );
                 }
                 else
                 {
-                    return ByteSource.wrap( bodyStream.readAllBytes() );
+                    final Path tempFile = Files.createTempFile( "xphttp", ".tmp" );
+                    Files.copy( body, tempFile, StandardCopyOption.REPLACE_EXISTING );
+                    return ByteSource.concat( ByteSource.concat( processor.chunks ), new RefPathByteSource( tempFile ) );
                 }
             }
             catch ( IOException e )
@@ -289,5 +285,48 @@ public final class HttpRequestHandler
     public void setClientCertificate( final ByteSource clientCertificate )
     {
         this.clientCertificate = clientCertificate;
+    }
+
+    static class BufferedBytesProcessor
+    {
+        private static final int BUFFER_SIZE = 8192;
+
+        final List<ByteSource> chunks = new ArrayList<>();
+
+        int totalRead;
+
+        boolean readFully;
+
+        static BufferedBytesProcessor read( final InputStream body )
+            throws IOException
+        {
+            final BufferedBytesProcessor processor = new BufferedBytesProcessor();
+            processor.readBytes( body );
+            return processor;
+        }
+
+        void readBytes( InputStream input )
+            throws IOException
+        {
+            byte[] buf = new byte[BUFFER_SIZE];
+            int read;
+            do
+            {
+                read = input.read( buf );
+                if ( read == -1 )
+                {
+                    readFully = true;
+                    return;
+                }
+            }
+            while ( processBytes( buf, read ) );
+        }
+
+        boolean processBytes( final byte[] buf, final int len )
+        {
+            chunks.add( ByteSource.wrap( Arrays.copyOfRange( buf, 0, len ) ) );
+            totalRead += len;
+            return totalRead < MAX_IN_MEMORY_BODY_STREAM_BYTES;
+        }
     }
 }
