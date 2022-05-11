@@ -195,7 +195,7 @@ exports.postImageRequest = function (mockServer, byteSource) {
         "message": "OK",
         "contentType": "image/png",
         "headers": {
-            "content-length": "10000001",
+            "content-length": "10485761",
             "content-type": "image/png"
         },
         "cookies": []
@@ -257,7 +257,7 @@ exports.getWithConnectTimeout = function (mockServer) {
         assert.assertTrue(false, 'Expected exception');
 
     } catch (e) {
-        assert.assertEquals("request timed out", e.message);
+        assert.assertEquals("couldn't receive headers on time", e.message);
     }
 
 };

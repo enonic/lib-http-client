@@ -94,33 +94,6 @@ public class UtilsTest
     }
 
     @Test
-    public void expectBodyOfLength_na_by_code()
-    {
-        assertNull( Utils.expectBodyOfLength( createResponseInfo( 204, null ) ) );
-        assertNull( Utils.expectBodyOfLength( createResponseInfo( 304, null ) ) );
-        assertNull( Utils.expectBodyOfLength( createResponseInfo( 100, null ) ) );
-    }
-
-    @Test
-    public void expectBodyOfLength_ContentLength()
-    {
-        assertEquals( (Long) ( -1L ), Utils.expectBodyOfLength( createResponseInfo( 200, Map.of( "content-length", List.of( "xyz" ) ) ) ) );
-
-        assertEquals( (Long) ( -1L ),
-                      Utils.expectBodyOfLength( createResponseInfo( 200, Map.of( "content-length", List.of( String.valueOf( -2 ) ) ) ) ) );
-
-        assertEquals( (Long) Long.MAX_VALUE, Utils.expectBodyOfLength(
-            createResponseInfo( 200, Map.of( "content-length", List.of( String.valueOf( Long.MAX_VALUE ) ) ) ) ) );
-    }
-
-    @Test
-    public void expectBodyOfLength_TransferEncoding()
-    {
-        assertEquals( (Long) ( -1L ), Utils.expectBodyOfLength(
-            createResponseInfo( 200, Map.of( "content-length", List.of( "3" ), "transfer-encoding", List.of( "chunked" ) ) ) ) );
-    }
-
-    @Test
     public void guessTextCharset()
     {
         assertEquals( StandardCharsets.ISO_8859_1, Utils.guessTextCharset(

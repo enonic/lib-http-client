@@ -74,33 +74,6 @@ final class Utils
             : null;
     }
 
-    /**
-     * Determines body length according to RFC7230 3.3.3
-     *
-     * @param responseInfo the responseInfo of which to determine the body length
-     * @return null, if body is not expected for response.
-     * -1, if body is expected but length is unknown.
-     * Otherwise, expected body length in octets.
-     */
-    public static Long expectBodyOfLength( final HttpResponse.ResponseInfo responseInfo )
-    {
-
-        final int responseCode = responseInfo.statusCode();
-        if ( responseCode == 204 || responseCode == 304 || responseCode <= 100 )
-        {
-            return null;
-        }
-
-        final HttpHeaders headers = responseInfo.headers();
-        if ( headers.firstValue( "transfer-encoding" ).isPresent() )
-        {
-            return -1L;
-        }
-
-        final long contentLength = getContentLength( headers );
-        return contentLength >= 0 ? contentLength : -1L;
-    }
-
     public static List<HttpCookie> getCookies( HttpResponse<?> response )
         throws IOException
     {
