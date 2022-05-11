@@ -28,7 +28,7 @@ public final class HttpRequestHandler
 {
     private static final long DEFAULT_READ_TIMEOUT = 10_000;
 
-    static final long MAX_IN_MEMORY_BODY_STREAM_BYTES = 10_000_000;
+    static final int MAX_IN_MEMORY_BODY_STREAM_BYTES = 10 * 1024 * 1024;
 
     private String url;
 

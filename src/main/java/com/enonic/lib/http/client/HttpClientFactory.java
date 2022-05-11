@@ -19,7 +19,6 @@ import com.github.mizosoft.methanol.Methanol;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import nl.altindag.ssl.SSLFactory;
 
@@ -33,8 +32,7 @@ class HttpClientFactory
 
     private static final ConcurrentMap<String, HttpClient> CACHE = new ConcurrentHashMap<>();
 
-    private static final Executor SHARED_WORKERS_EXECUTOR =
-        Executors.newCachedThreadPool( new ThreadFactoryBuilder().setNameFormat( "lib-httpclient-Shared-Worker-%d" ).build() );
+    private static final Executor SHARED_WORKERS_EXECUTOR = Executors.newCachedThreadPool( new SharedWorkerThreadFactory() );
 
     private HttpClientFactory()
     {
@@ -129,9 +127,9 @@ class HttpClientFactory
 
             private ByteSource certificates;
 
-            Builder disableHttp2( final boolean secure )
+            Builder disableHttp2( final boolean disableHttp2 )
             {
-                this.disableHttp2 = secure;
+                this.disableHttp2 = disableHttp2;
                 return this;
             }
 
@@ -273,6 +271,7 @@ class HttpClientFactory
     {
         final var clientBuilder = Methanol.newBuilder();
         clientBuilder.connectTimeout( params.connectTimeout );
+        clientBuilder.headersTimeout( params.connectTimeout );
         if ( params.disableHttp2 )
         {
             clientBuilder.version( HttpClient.Version.HTTP_1_1 );
