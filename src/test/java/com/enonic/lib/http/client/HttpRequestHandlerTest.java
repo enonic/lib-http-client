@@ -197,10 +197,10 @@ public class HttpRequestHandlerTest
     public void testPostImageRequest()
         throws Exception
     {
-        final byte[] bytes = new byte[(int) HttpRequestHandler.MAX_IN_MEMORY_BODY_STREAM_BYTES + 1]; // bypass in-memory limit
+        final byte[] bytes = new byte[HttpRequestHandler.MAX_IN_MEMORY_BODY_STREAM_BYTES + 1]; // bypass in-memory limit
+        ThreadLocalRandom.current().nextBytes( bytes );
         addResponse( bytes, "image/png" );
 
-        ThreadLocalRandom.current().nextBytes( bytes );
         runFunction( "/lib/test/request-test.js", "postImageRequest", getServerHost(), ByteSource.wrap( bytes ) );
 
         final RecordedRequest request = takeRequest();
@@ -236,7 +236,6 @@ public class HttpRequestHandlerTest
     }
 
     @Test(timeout = 20000)
-    @Ignore
     public void testConnectTimeout()
         throws Exception
     {
