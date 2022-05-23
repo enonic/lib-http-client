@@ -95,7 +95,7 @@ public final class HttpRequestHandler
                                                                            .build() );
 
         final HttpClient client = HttpClientFactory.getHttpClient( HttpClientFactory.params()
-                                                                       .disableHttp2( !url.startsWith( "https://" ) )
+                                                                       .disableHttp2( !Utils.isSecure( request.uri() ) )
                                                                        .connectTimeout( connectionTimeout )
                                                                        .authUser( authUser )
                                                                        .authPassword( authPassword )
@@ -106,7 +106,7 @@ public final class HttpRequestHandler
                                                                        .followRedirects( followRedirects )
                                                                        .certificates( certificates )
                                                                        .clientCertificate( clientCertificate )
-                                                                       .build() );
+                                                                       .build(), request.uri() );
 
         return client.send( request, mapToFullyReadByteSource(
             MoreBodySubscribers.withReadTimeout( HttpResponse.BodySubscribers.ofInputStream(),
