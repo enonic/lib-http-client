@@ -31,6 +31,11 @@ final class Utils
     {
     }
 
+    public static boolean isSecure( final URI uri )
+    {
+        return uri.getScheme().equalsIgnoreCase( "https" );
+    }
+
     public static long getContentLength( final HttpHeaders headers )
     {
         try

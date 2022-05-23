@@ -5,9 +5,12 @@ import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.ProxySelector;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.CharBuffer;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -26,16 +29,31 @@ import static java.util.Objects.requireNonNullElse;
 
 class HttpClientFactory
 {
+    private static final long IDLE_TIMEOUT_MS = Long.getLong( "com.enonic.lib.http.client.idle.timeout", 30000 );
+
     private static final long DEFAULT_CONNECT_TIMEOUT_MS = 10_000;
 
     private static final int DEFAULT_PROXY_PORT = 8080;
 
-    private static final ConcurrentMap<String, HttpClient> CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, HttpClientWrapper> CACHE = new ConcurrentHashMap<>();
 
     private static final Executor SHARED_WORKERS_EXECUTOR = Executors.newCachedThreadPool( new SharedWorkerThreadFactory() );
 
     private HttpClientFactory()
     {
+    }
+
+    private static class HttpClientWrapper
+    {
+        final HttpClient client;
+
+        final Map<String, Long> lastAccess;
+
+        public HttpClientWrapper( final HttpClient client, Map<String, Long> lastAccess )
+        {
+            this.client = client;
+            this.lastAccess = lastAccess;
+        }
     }
 
     static class ClientParams
@@ -212,9 +230,54 @@ class HttpClientFactory
         CACHE.clear();
     }
 
-    static HttpClient getHttpClient( ClientParams params )
+    static HttpClient getHttpClient( final ClientParams params, final URI uri )
     {
-        return CACHE.computeIfAbsent( cacheKey( params ), c -> createClient( params ) );
+        return CACHE.compute( cacheKey( params ), ( key, old ) -> {
+            if ( IDLE_TIMEOUT_MS <= 0 )
+            {
+                return old != null ? old : new HttpClientWrapper( createClient( params ), null );
+            }
+            final String keyForRequest = keyForRequest( uri, params.proxy );
+            final long currentTimeMillis = System.currentTimeMillis();
+
+            final Long lastAccess = old != null ? old.lastAccess.get( keyForRequest ) : null;
+
+            if ( old != null && ( lastAccess == null || lastAccess > currentTimeMillis - IDLE_TIMEOUT_MS ) )
+            {
+                old.lastAccess.put( keyForRequest, currentTimeMillis );
+                return old;
+            }
+            else
+            {
+                return new HttpClientWrapper( createClient( params ), new HashMap<>( Map.of( keyForRequest, currentTimeMillis ) ) );
+            }
+        } ).client;
+    }
+
+    private static String keyForRequest( final URI uri, final InetSocketAddress proxy )
+    {
+        final boolean isSecure = Utils.isSecure( uri );
+        final String host = uri.getHost();
+        final int port = uri.getPort() == -1 ? ( isSecure ? 443 : 80 ) : uri.getPort();
+
+        final StringBuilder keyBuilder = new StringBuilder( isSecure ? "S:" : "C:" );
+
+        if ( proxy == null )
+        {
+            keyBuilder.append( "H:" ).append( host ).append( ":" ).append( port );
+        }
+        else
+        {
+            if ( isSecure )
+            {
+                keyBuilder.append( "T:H:" ).append( host ).append( ":" ).append( port ).append( ";" );
+            }
+            final String proxyHost = proxy.getHostString();
+            final int proxyPort = proxy.getPort();
+
+            keyBuilder.append( "P:" ).append( proxyHost ).append( ":" ).append( proxyPort );
+        }
+        return keyBuilder.toString();
     }
 
     private static String cacheKey( final ClientParams params )
