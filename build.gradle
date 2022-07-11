@@ -14,7 +14,7 @@ dependencies {
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
     implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
-    implementation 'io.github.hakky54:sslcontext-kickstart:7.4.4'
+    implementation 'io.github.hakky54:sslcontext-kickstart:7.4.5'
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.mockito:mockito-core:4.6.1"
     testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
