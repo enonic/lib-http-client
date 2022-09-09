@@ -105,6 +105,8 @@ The request function takes a parameter object with options. The only mandatory o
 ** `*certificates*` (_*_) Stream of PEM encoded certificates. Replaces the host platform's certificate authorities with a custom certificate.
 ** `*clientCertificate*` (_*_) Stream of PEM encoded certificate: Private key (in PKCS #8 format) and the client certificate concatenated.
 
+WARNING: For every new combination of `connectionTimeout`, `followRedirects`, `auth.*`, `proxy.*`, `certificates`, `clientCertificate` a new internal HttpClient gets created.
+
 *Returns*
 
 The function will return a `response` object with the following properties:
