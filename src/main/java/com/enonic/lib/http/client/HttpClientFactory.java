@@ -333,7 +333,6 @@ class HttpClientFactory
     private static HttpClient createClient( final ClientParams params )
     {
         final var clientBuilder = Methanol.newBuilder();
-        clientBuilder.connectTimeout( params.connectTimeout );
         clientBuilder.headersTimeout( params.connectTimeout );
         if ( params.disableHttp2 )
         {
