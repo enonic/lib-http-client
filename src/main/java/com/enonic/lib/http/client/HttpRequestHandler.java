@@ -49,6 +49,8 @@ public final class HttpRequestHandler
 
     private List<Map<String, Object>> multipart;
 
+    private boolean allowHttp2;
+
     private Long connectionTimeout;
 
     private String authUser;
@@ -95,7 +97,7 @@ public final class HttpRequestHandler
                                                                            .build() );
 
         final HttpClient client = HttpClientFactory.getHttpClient( HttpClientFactory.params()
-                                                                       .disableHttp2( !Utils.isSecure( request.uri() ) )
+                                                                       .allowHttp2( allowHttp2 && Utils.isSecure( request.uri() ) )
                                                                        .connectTimeout( connectionTimeout )
                                                                        .authUser( authUser )
                                                                        .authPassword( authPassword )
@@ -213,6 +215,11 @@ public final class HttpRequestHandler
     public void setMethod( final String value )
     {
         this.method = value;
+    }
+
+    public void setAllowHttp2( final boolean allowHttp2 )
+    {
+        this.allowHttp2 = allowHttp2;
     }
 
     @SuppressWarnings("unused")
