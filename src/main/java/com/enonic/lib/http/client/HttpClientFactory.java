@@ -72,12 +72,12 @@ class HttpClientFactory
 
         final byte[] clientCertificate;
 
-        final boolean disableHttp2;
+        final boolean allowHttp2;
 
         private ClientParams( final Builder builder )
             throws IOException
         {
-            this.disableHttp2 = builder.disableHttp2;
+            this.allowHttp2 = builder.allowHttp2;
 
             this.connectTimeout = Duration.ofMillis( requireNonNullElse( builder.connectTimeout, DEFAULT_CONNECT_TIMEOUT_MS ) );
 
@@ -123,7 +123,7 @@ class HttpClientFactory
             {
             }
 
-            private boolean disableHttp2;
+            private boolean allowHttp2;
 
             private Long connectTimeout;
 
@@ -145,9 +145,9 @@ class HttpClientFactory
 
             private ByteSource certificates;
 
-            Builder disableHttp2( final boolean disableHttp2 )
+            Builder allowHttp2( final boolean allowHttp2 )
             {
-                this.disableHttp2 = disableHttp2;
+                this.allowHttp2 = allowHttp2;
                 return this;
             }
 
@@ -284,7 +284,7 @@ class HttpClientFactory
     {
         final Hasher hasher = Hashing.sha512().newHasher();
 
-        hasher.putBoolean( params.disableHttp2 );
+        hasher.putBoolean( params.allowHttp2 );
 
         hasher.putLong( params.connectTimeout.toMillis() );
 
@@ -334,7 +334,7 @@ class HttpClientFactory
     {
         final var clientBuilder = Methanol.newBuilder();
         clientBuilder.headersTimeout( params.connectTimeout );
-        if ( params.disableHttp2 )
+        if ( !params.allowHttp2 )
         {
             clientBuilder.version( HttpClient.Version.HTTP_1_1 );
         }
