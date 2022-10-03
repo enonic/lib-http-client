@@ -49,7 +49,7 @@ public final class HttpRequestHandler
 
     private List<Map<String, Object>> multipart;
 
-    private boolean allowHttp2;
+    private boolean disableHttp2;
 
     private Long connectionTimeout;
 
@@ -97,7 +97,7 @@ public final class HttpRequestHandler
                                                                            .build() );
 
         final HttpClient client = HttpClientFactory.getHttpClient( HttpClientFactory.params()
-                                                                       .allowHttp2( allowHttp2 && Utils.isSecure( request.uri() ) )
+                                                                       .disableHttp2( disableHttp2 || !Utils.isSecure( request.uri() ) )
                                                                        .connectTimeout( connectionTimeout )
                                                                        .authUser( authUser )
                                                                        .authPassword( authPassword )
@@ -217,9 +217,9 @@ public final class HttpRequestHandler
         this.method = value;
     }
 
-    public void setAllowHttp2( final boolean allowHttp2 )
+    public void setDisableHttp2( final boolean disableHttp2 )
     {
-        this.allowHttp2 = allowHttp2;
+        this.disableHttp2 = disableHttp2;
     }
 
     @SuppressWarnings("unused")
