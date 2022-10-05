@@ -20,6 +20,11 @@ dependencies {
     testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.enonic.xp:testing:${xpVersion}"
+    testImplementation('org.slf4j:slf4j-api') {
+        version {
+            strictly '1.7.26'
+        }
+    }
 }
 
 repositories {

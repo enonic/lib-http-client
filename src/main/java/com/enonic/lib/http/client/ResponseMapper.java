@@ -60,7 +60,11 @@ public final class ResponseMapper
     private void serializeHeaders( final String name, final MapGenerator gen )
     {
         gen.map( name );
-        this.headers.map().forEach( ( key, value ) -> gen.value( key, value.size() == 1 ? value.get( 0 ) : value ) );
+        this.headers.map()
+            .entrySet()
+            .stream()
+            .filter( e -> !":status".equals( e.getKey() ) )
+            .forEach( e -> gen.value( e.getKey(), e.getValue().size() == 1 ? e.getValue().get( 0 ) : e.getValue() ) );
         gen.end();
     }
 
