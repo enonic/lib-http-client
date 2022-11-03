@@ -19,14 +19,14 @@ To use this library in your JavaScript code, it first needs to be required:
 
 [source,js]
 ----
-var httpClient = require('/lib/http-client');
+const httpClient = require('/lib/http-client');
 ----
 
 To make an HTTP or HTTPS request just call the `request` function with the desired parameters.
 
 [source,js]
 ----
-var response = httpClient.request({
+const response = httpClient.request({
     url: 'http://somehost/my/service', <1>
     method: 'POST',                    <2>
     headers: {
@@ -137,9 +137,9 @@ The Library supports transparent `gzip` and `deflate` response body decompressio
 === `Basic Authentication`
 [source,js]
 ----
-var httpClient = require('/lib/http-client');
+const httpClient = require('/lib/http-client');
 
-var response = httpClient.request({
+const response = httpClient.request({
     url: 'http://somehost/protected/service',
     method: 'GET',
     auth: {
@@ -153,9 +153,9 @@ var response = httpClient.request({
 === `Request via Proxy`
 [source,js]
 ----
-var httpClient = require('/lib/http-client');
+const httpClient = require('/lib/http-client');
 
-var response = httpClient.request({
+const response = httpClient.request({
     url: 'http://somehost/some/service',
     method: 'GET',
     proxy: {
@@ -171,9 +171,9 @@ var response = httpClient.request({
 === `Multipart POST request`
 [source,js]
 ----
-var httpClient = require('/lib/http-client');
+const httpClient = require('/lib/http-client');
 
-var response = httpClient.request({
+const response = httpClient.request({
     url: 'http://somehost/uploadMedia',
     method: 'POST',
     contentType: 'multipart/mixed',
@@ -195,12 +195,12 @@ var response = httpClient.request({
 === `Using custom certificate`
 [source,js]
 ----
-var httpClient = require('/lib/http-client');
-var ioLib = require('/lib/xp/io');  // IO API library from XP
-var token = app.config['token']; // Token stored in the application config file
-var certificates = ioLib.newStream(app.config['certificates']); // Certificate stored in the application config file. NOTE: It is not a location of the certificate file, but body of the certificate itself.
+const httpClient = require('/lib/http-client');
+const ioLib = require('/lib/xp/io');  // IO API library from XP
+const token = app.config['token']; // Token stored in the application config file
+const certificates = ioLib.newStream(app.config['certificates']); // Certificate stored in the application config file. NOTE: It is not a location of the certificate file, but body of the certificate itself.
 
-var response = httpClient.request({
+const response = httpClient.request({
     url: 'http://somehost/some/service',
     method: 'POST',
     headers: {'Authorization': 'Bearer ' + token},
