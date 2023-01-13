@@ -40,7 +40,7 @@ function checkRequired(params, name) {
  * @param {object} [params.params] Body form parameters. Will be encoded according to `application/x-www-form-urlencoded`.
  * For "GET" and "HEAD" request methods params are added to query string, but only if `params.queryParams` is not provided.
  * @param {object} [params.headers] HTTP headers, an object where the keys are header names and the values the header values.
- * @param {number} [params.disableHttp2=false] Disable use of HTTP/2 protocol. For insecure HTTP connections HTTP/2 is always disabled.
+ * @param {boolean} [params.disableHttp2=false] Disable use of HTTP/2 protocol. For insecure HTTP connections HTTP/2 is always disabled.
  * @param {number} [params.connectionTimeout=10000] The timeout on establishing the connection, in milliseconds.
  * @param {number} [params.readTimeout=10000] The timeout on waiting to receive data, in milliseconds.
  * @param {string|*} [params.body] Body content to send with the request, usually for POST or PUT requests. It can be of type string or stream.

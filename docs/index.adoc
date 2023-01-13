@@ -88,6 +88,7 @@ The request function takes a parameter object with options. The only mandatory o
 ** `*queryParams*` (_object_) Query parameters to be sent with the request.
 ** `*params*` (_object_) Form parameters to be sent with the request. Will not be used if `*queryParams*` is provided.
 ** `*headers*` (_object_) HTTP headers, an object where the keys are header names and the values the header values.
+** `*disableHttp2*` (_boolean_) Disable use of HTTP/2 protocol. The default value is `false`. For insecure HTTP connections HTTP/2 is always disabled. (added in v3.2.0)
 ** `*connectionTimeout*` (_number_) The timeout on establishing the connection, in milliseconds. The default value is `10000`.
 ** `*readTimeout*` (_number_) The timeout on waiting to receive data, in milliseconds. The default value is `10000`.
 ** `*body*` (_string_ | _object_) Body content to send with the request, usually for POST or PUT requests. It can be of type string or stream.
