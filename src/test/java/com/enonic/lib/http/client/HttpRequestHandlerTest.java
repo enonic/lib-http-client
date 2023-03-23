@@ -206,6 +206,8 @@ public class HttpRequestHandlerTest
         assertEquals( "POST", request.getMethod() );
         assertEquals( "/my/url", request.getPath() );
         assertEquals( "image/png", request.getHeader( "content-type" ) );
+        assertEquals( 10485761, request.getBodySize( ) );
+        assertTrue(  request.getChunkSizes( ).isEmpty() );
         assertArrayEquals( bytes, request.getBody().readByteArray() );
     }
 

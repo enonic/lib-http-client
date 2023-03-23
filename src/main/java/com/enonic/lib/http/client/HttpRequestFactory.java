@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MoreBodyPublishers;
 import com.github.mizosoft.methanol.MultipartBodyPublisher;
+import com.google.common.base.Optional;
 import com.google.common.io.ByteSource;
 
 import static java.util.Objects.requireNonNull;
@@ -49,10 +50,8 @@ class HttpRequestFactory
         {
             this.method = requireNonNullElse( builder.method, "GET" ).trim().toUpperCase( Locale.ROOT );
             this.formIsQueryParams = "GET".equals( this.method ) || "HEAD".equals( this.method );
-            this.uri = URI.create( requireNonNull(builder.url) );
-            this.form = builder.form == null
-                ? null
-                : toStringStringMap(builder.form);
+            this.uri = URI.create( requireNonNull( builder.url ) );
+            this.form = builder.form == null ? null : toStringStringMap( builder.form );
             this.queryParams = builder.queryParams != null ? toStringStringMap( builder.queryParams ) : null;
 
             this.headers = requireNonNullElse( builder.headers, Map.of() );
@@ -270,7 +269,7 @@ class HttpRequestFactory
 
     private static HttpRequest.BodyPublisher byteSourceBodyPublisher( final ByteSource byteSource )
     {
-        return HttpRequest.BodyPublishers.ofInputStream( () -> {
+        final HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofInputStream( () -> {
             try
             {
                 return byteSource.openBufferedStream();
@@ -280,5 +279,15 @@ class HttpRequestFactory
                 throw new UncheckedIOException( e );
             }
         } );
+
+        final Optional<Long> sizeIfKnown = byteSource.sizeIfKnown();
+        if ( sizeIfKnown.isPresent() )
+        {
+            return HttpRequest.BodyPublishers.fromPublisher( bodyPublisher, sizeIfKnown.get() );
+        }
+        else
+        {
+            return bodyPublisher;
+        }
     }
 }
