@@ -27,15 +27,15 @@ To make an HTTP or HTTPS request just call the `request` function with the desir
 [source,js]
 ----
 const response = httpClient.request({
-    url: 'http://somehost/my/service', <1>
-    method: 'POST',                    <2>
+    url: 'http://somehost/my/service', // <1>
+    method: 'POST',                    // <2>
     headers: {
-        'Cache-Control': 'no-cache'    <3>
+        'Cache-Control': 'no-cache'    // <3>
     },
-    connectionTimeout: 20000,          <4>
-    readTimeout: 5000,                 <5>
-    body: '{"id": 123}',               <6>
-    contentType: 'application/json'    <7>
+    connectionTimeout: 20000,          // <4>
+    readTimeout: 5000,                 // <5>
+    body: '{"id": 123}',               // <6>
+    contentType: 'application/json'    // <7>
 });
 ----
 <1> The target URL for the request. Should be a valid _http://_ or _https://_ URL.
@@ -52,12 +52,12 @@ The function will return an object with the properties of the HTTP response:
 [source,js]
 ----
 response = {
-    'status': 200,               <1>
-    'message': 'OK',             <2>
-    'body': 'Response contents', <3>
-    'contentType': 'text/plain', <4>
+    'status': 200,               // <1>
+    'message': 'OK',             // <2>
+    'body': 'Response contents', // <3>
+    'contentType': 'text/plain', // <4>
     'headers': {
-        'Content-Length': '17',  <5>
+        'Content-Length': '17',  // <5>
         'content-type': 'text/plain'
     }
 };
