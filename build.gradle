@@ -16,7 +16,7 @@ dependencies {
     implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
     implementation 'io.github.hakky54:sslcontext-kickstart:8.1.6'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "org.mockito:mockito-core:5.5.0"
+    testImplementation "org.mockito:mockito-core:5.6.0"
     testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.enonic.xp:testing:${xpVersion}"
