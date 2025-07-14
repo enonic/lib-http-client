@@ -13,7 +13,7 @@ ext {
 dependencies {
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
-    implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
+    implementation 'com.github.mizosoft.methanol:methanol:1.8.3'
     implementation 'io.github.hakky54:sslcontext-kickstart:9.1.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.mockito:mockito-core:5.18.0"
