@@ -7,7 +7,7 @@ plugins {
 }
 
 ext {
-    okhttpVersion = '5.0.0'
+    okhttpVersion = '5.1.0'
 }
 
 dependencies {
