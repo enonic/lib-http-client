@@ -2,21 +2,21 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'maven-publish'
-    id 'com.enonic.defaults' version '2.1.5'
-    id 'com.enonic.xp.base' version '3.6.1'
+    id 'com.enonic.defaults' version '2.1.6'
+    id 'com.enonic.xp.base' version '3.6.2'
 }
 
 ext {
-    okhttpVersion = '5.1.0'
+    okhttpVersion = '5.3.0'
 }
 
 dependencies {
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
     implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
-    implementation 'io.github.hakky54:ayza:10.0.0'
+    implementation 'io.github.hakky54:ayza:10.0.1'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "org.mockito:mockito-core:5.19.0"
+    testImplementation "org.mockito:mockito-core:5.20.0"
     testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.enonic.xp:testing:${xpVersion}"
