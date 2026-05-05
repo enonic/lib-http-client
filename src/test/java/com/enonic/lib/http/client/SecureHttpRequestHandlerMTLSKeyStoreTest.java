@@ -2,14 +2,14 @@ package com.enonic.lib.http.client;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Throwables;
 
 import okhttp3.mockwebserver.MockResponse;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SecureHttpRequestHandlerMTLSKeyStoreTest
     extends SecureHttpRequest

@@ -25,6 +25,7 @@ var expected = {
     'status': 200,
     'message': 'OK',
     'body': 'POST request',
+    'bodyStream': {},
     'contentType': 'text/plain',
     'headers': {
         'content-length': '12',

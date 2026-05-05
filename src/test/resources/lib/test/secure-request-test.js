@@ -13,6 +13,7 @@ exports.withCertificatesGetRequest = function (serverUrl, serverCertificate, cli
         "status": 200,
         "message": "OK",
         "body": "GET request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "11",
@@ -33,6 +34,7 @@ exports.withNoCertificatesGetRequest = function (serverUrl) {
         "status": 200,
         "message": "OK",
         "body": "GET request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "11",

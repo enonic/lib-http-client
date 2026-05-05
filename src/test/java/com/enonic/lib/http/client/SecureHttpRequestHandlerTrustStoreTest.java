@@ -2,15 +2,16 @@ package com.enonic.lib.http.client;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Throwables;
 
 import okhttp3.mockwebserver.MockResponse;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SecureHttpRequestHandlerTrustStoreTest
     extends SecureHttpRequest
@@ -28,7 +29,7 @@ public class SecureHttpRequestHandlerTrustStoreTest
         trustStorePath = setupTrustStore( trustStorePass );
     }
 
-    @After
+    @AfterEach
     public void clearTrustStore()
     {
         System.clearProperty( "javax.net.ssl.trustStore" );
@@ -36,7 +37,7 @@ public class SecureHttpRequestHandlerTrustStoreTest
     }
 
     @Test
-    @Ignore("javax.net.ssl once read can't be reset. Test works in isolated JVM")
+    @Disabled("javax.net.ssl once read can't be reset. Test works in isolated JVM")
     public void withTrustStoreGetRequest()
     {
         System.setProperty( "javax.net.ssl.trustStore", trustStorePath );

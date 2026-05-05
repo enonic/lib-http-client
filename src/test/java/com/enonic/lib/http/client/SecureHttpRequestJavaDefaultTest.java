@@ -1,8 +1,8 @@
 package com.enonic.lib.http.client;
 
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import okhttp3.mockwebserver.MockResponse;
 
@@ -25,7 +25,7 @@ public class SecureHttpRequestJavaDefaultTest
         super.initialize();
     }
 
-    @After
+    @AfterEach
     public void clear()
     {
         System.clearProperty( "javax.net.ssl.trustStore" );
@@ -35,7 +35,7 @@ public class SecureHttpRequestJavaDefaultTest
     }
 
     @Test
-    @Ignore("javax.net.ssl once read can't be reset. Test works in isolated JVM")
+    @Disabled("javax.net.ssl once read can't be reset. Test works in isolated JVM")
     public void withJavaDefault()
         throws Exception
     {
@@ -57,7 +57,7 @@ public class SecureHttpRequestJavaDefaultTest
     }
 
     @Test
-    @Ignore("javax.net.ssl once read can't be reset. Test works in isolated JVM")
+    @Disabled("javax.net.ssl once read can't be reset. Test works in isolated JVM")
     public void withJavaDefaultTrustStore()
         throws Exception
     {

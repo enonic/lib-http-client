@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteSource;
@@ -13,7 +13,8 @@ import com.google.common.io.ByteSource;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.tls.HeldCertificate;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SecureHttpRequestHandlerTest
     extends SecureHttpRequest
