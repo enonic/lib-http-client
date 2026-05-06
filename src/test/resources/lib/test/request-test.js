@@ -11,6 +11,7 @@ exports.simpleGetRequest = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "GET request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "11",
@@ -35,6 +36,7 @@ exports.simplePostRequest = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "POST request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "12",
@@ -59,6 +61,7 @@ exports.simplePatchRequest = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "PATCH request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "13",
@@ -81,6 +84,7 @@ exports.simpleHeadRequest = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "11",
@@ -109,6 +113,7 @@ exports.getRequestWithParams = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "GET request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "11",
@@ -142,6 +147,7 @@ exports.postRequestWithParams = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "POST request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "12",
@@ -168,6 +174,7 @@ exports.postJsonRequest = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "POST request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "12",
@@ -193,6 +200,7 @@ exports.postImageRequest = function (mockServer, byteSource) {
     var expectedJson = {
         "status": 200,
         "message": "OK",
+        "bodyStream": {},
         "contentType": "image/png",
         "headers": {
             "content-length": "10485761",
@@ -218,6 +226,7 @@ exports.getWithHeadersRequest = function (mockServer) {
         "status": 200,
         "message": "OK",
         "body": "GET request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "11",
@@ -279,6 +288,7 @@ exports.requestWithProxy = function (mockServer, proxyHost, proxyPort) {
         "status": 200,
         "message": "OK",
         "body": "POST request",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "12",
@@ -308,6 +318,7 @@ exports.requestWithProxyAuth = function (mockServer, proxyHost, proxyPort) {
         "status": 200,
         "message": "OK",
         "body": "POST request authenticated",
+        "bodyStream": {},
         "contentType": "text/plain",
         "headers": {
             "content-length": "26",
@@ -331,6 +342,7 @@ exports.cookies = function (mockServer) {
         'status': 200,
         'message': 'OK',
         'body': 'GET request',
+        'bodyStream': {},
         "contentType": "text/plain",
         'headers': {
             'content-length': '11',
@@ -361,6 +373,7 @@ exports.requestWithSoapResponse = function (mockServer) {
         'status': 200,
         'message': 'OK',
         'body': '<?xml version="1.0" encoding="utf-8"?><body/>',
+        'bodyStream': {},
         'contentType': 'application/soap+xml; charset=utf-8',
         'headers': {
             'content-length': '45',

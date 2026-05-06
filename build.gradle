@@ -3,7 +3,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'com.enonic.defaults' version '2.1.6'
-    id 'com.enonic.xp.base' version '3.6.2'
+    id 'com.enonic.xp.base'
 }
 
 ext {
@@ -11,11 +11,13 @@ ext {
 }
 
 dependencies {
-    compileOnly "com.enonic.xp:script-api:${xpVersion}"
-    compileOnly "com.enonic.xp:core-api:${xpVersion}"
+    compileOnly xplibs.api.script
+    compileOnly xplibs.api.core
     implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
     implementation 'io.github.hakky54:sslcontext-kickstart:9.2.1'
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation "org.mockito:mockito-core:5.23.0"
     testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
@@ -30,6 +32,10 @@ dependencies {
 repositories {
     mavenCentral()
     xp.enonicRepo()
+}
+
+test {
+    useJUnitPlatform()
 }
 
 jacocoTestReport {

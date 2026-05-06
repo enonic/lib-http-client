@@ -7,25 +7,28 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RefPathByteSourceTest
 {
     private Path tempFile;
 
-    @Before
+    @BeforeEach
     public void setUp()
         throws Exception
     {
         tempFile = Files.createTempFile( "xphttp", ".tmp" );
     }
 
-    @After
+    @AfterEach
     public final void shutdown()
         throws Exception
     {
@@ -77,13 +80,13 @@ public class RefPathByteSourceTest
 
         System.gc();
         Thread.sleep( 5000 );
-        assertTrue( "File should exist while it is referenced", Files.exists( tempFile ) );
+        assertTrue( Files.exists( tempFile ), "File should exist while it is referenced" );
 
         ref.set( null );
         System.gc();
         CompletableFuture.completedFuture( tempFile ).thenAcceptAsync( this::busyWaitFileNotExists ).get( 5, TimeUnit.SECONDS );
 
-        assertFalse( "File should be removed when it is no longer referenced", Files.exists( tempFile ) );
+        assertFalse( Files.exists( tempFile ), "File should be removed when it is no longer referenced" );
     }
 
     private void busyWaitFileNotExists( Path tempFile )

@@ -5,21 +5,21 @@ import com.google.common.io.ByteSource;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.tls.HandshakeCertificates;
 import okhttp3.tls.HeldCertificate;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 
 public class SecureHttpRequest extends ScriptTestSupport
 {
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public Path tempFolder;
 
     protected MockWebServer server;
 
@@ -86,7 +86,7 @@ public class SecureHttpRequest extends ScriptTestSupport
         server.start();
     }
 
-    @After
+    @AfterEach
     public void tearDown()
         throws Exception
     {
@@ -97,7 +97,7 @@ public class SecureHttpRequest extends ScriptTestSupport
     protected String setupTrustStore( String password )
         throws Exception
     {
-        File trustStoreFile = tempFolder.newFile("tmpTrustStore");
+        File trustStoreFile = tempFolder.resolve( "tmpTrustStore" ).toFile();
 
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         trustStore.load(null, null);
@@ -110,7 +110,7 @@ public class SecureHttpRequest extends ScriptTestSupport
     protected String setupKeyStore( String password )
         throws Exception
     {
-        File keystoreFile = tempFolder.newFile("tmpKeyStore");
+        File keystoreFile = tempFolder.resolve( "tmpKeyStore" ).toFile();
 
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(null, null);

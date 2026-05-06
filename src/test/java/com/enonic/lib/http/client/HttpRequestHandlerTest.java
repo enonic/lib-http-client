@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import com.google.common.base.Charsets;
@@ -21,7 +22,9 @@ import com.enonic.xp.testing.ScriptTestSupport;
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.TraceManager;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HttpRequestHandlerTest
     extends ScriptTestSupport
@@ -48,7 +51,7 @@ public class HttpRequestHandlerTest
         com.enonic.xp.trace.Tracer.setManager( manager );
     }
 
-    @After
+    @AfterEach
     public final void shutdown()
         throws Exception
     {
@@ -224,7 +227,8 @@ public class HttpRequestHandlerTest
         assertEquals( "some-value", request.getHeader( "X-Custom-Header" ) );
     }
 
-    @Test(timeout = 20000)
+    @Test
+    @Timeout( 20 )
     public void testReadTimeout()
         throws Exception
     {
@@ -236,7 +240,8 @@ public class HttpRequestHandlerTest
         assertEquals( "GET", request.getMethod() );
     }
 
-    @Test(timeout = 20000)
+    @Test
+    @Timeout( 20 )
     public void testConnectTimeout()
         throws Exception
     {
