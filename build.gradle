@@ -15,7 +15,7 @@ dependencies {
     compileOnly xplibs.api.core
     implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
     implementation 'io.github.hakky54:sslcontext-kickstart:9.2.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation "org.mockito:mockito-core:5.23.0"
