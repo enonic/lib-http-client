@@ -2,29 +2,25 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'maven-publish'
-    id 'com.enonic.defaults' version '2.1.6'
+    alias(libs.plugins.enonic.defaults)
     id 'com.enonic.xp.base'
-}
-
-ext {
-    okhttpVersion = '5.3.2'
 }
 
 dependencies {
     compileOnly xplibs.api.script
     compileOnly xplibs.api.core
-    implementation 'com.github.mizosoft.methanol:methanol:1.9.0'
-    implementation 'io.github.hakky54:sslcontext-kickstart:9.2.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "org.mockito:mockito-core:5.23.0"
-    testImplementation "com.squareup.okhttp3:okhttp-tls:${okhttpVersion}"
-    testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
+    implementation libs.methanol
+    implementation libs.ayza
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.jupiter.engine
+    testRuntimeOnly libs.junit.platform.launcher
+    testImplementation libs.mockito.core
+    testImplementation libs.okhttp.tls
+    testImplementation libs.okhttp.mockwebserver
     testImplementation "com.enonic.xp:testing:${xpVersion}"
-    testImplementation('org.slf4j:slf4j-api') {
+    testImplementation(libs.slf4j.api) {
         version {
-            strictly '1.7.26'
+            strictly libs.versions.slf4j.get()
         }
     }
 }
