@@ -266,7 +266,7 @@ exports.getWithConnectTimeout = function (mockServer) {
         assert.assertTrue(false, 'Expected exception');
 
     } catch (e) {
-        assert.assertEquals("couldn't receive headers on time", e.message);
+        assert.assertEquals("Couldn't receive headers on time", e.message);
     }
 
 };
