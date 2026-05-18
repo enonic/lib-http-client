@@ -4,7 +4,7 @@ ayza = "10.0.5"
 junit5 = "6.0.3"
 mockito = "5.23.0"
 okhttp = "5.3.2"
-slf4j = "1.7.26"
+slf4j = "2.0.18"
 
 [libraries]
 methanol = { module = "com.github.mizosoft.methanol:methanol", version.ref = "methanol" }
