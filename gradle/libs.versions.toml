@@ -1,7 +1,7 @@
 [versions]
 methanol = "1.9.0"
 ayza = "10.0.5"
-junit5 = "6.1.0"
+junit5 = "6.1.1"
 mockito = "5.23.0"
 okhttp = "5.4.0"
 slf4j = "2.0.18"
