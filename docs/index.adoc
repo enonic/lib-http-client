@@ -1,5 +1,7 @@
 = HTTP Client Library
 
+NOTE: Versions 3.x target XP 7+.
+
 image::https://img.shields.io/badge/xp-7.+-blue.svg[role="right"]
 
 Easily access remote web API's and data sources over HTTP using this library.
