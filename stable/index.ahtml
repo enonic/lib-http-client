@@ -447,7 +447,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#requestoptions"><code>request(options)</code></a></li>
 </ul>
 </li>
-<li><a href="#keystore_and_truststore_configuration_v3_0_0">KeyStore and TrustStore Configuration [<strong>v3.0.0+</strong>]</a></li>
+<li><a href="#keystore_and_truststore_configuration">KeyStore and TrustStore Configuration</a></li>
 <li><a href="#compression">Compression</a></li>
 <li><a href="#examples">Examples</a>
 <ul class="sectlevel2">
@@ -464,10 +464,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<div class="imageblock right">
-<div class="content">
-<img src="https://img.shields.io/badge/xp-7.+-blue.svg" alt="xp 7.+ blue">
-</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Versions 4.x target XP 8+.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Easily access remote web API&#8217;s and data sources over HTTP using this library.</p>
@@ -478,7 +485,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  include 'com.enonic.lib:lib-http-client:3.2.1'
+  include "com.enonic.lib:lib-http-client:${libVersion}"
 }</code></pre>
 </div>
 </div>
@@ -628,7 +635,7 @@ The request is made synchronously, that means the execution will block until the
 <p><code><strong>headers</strong></code> (<em>object</em>) HTTP headers, an object where the keys are header names and the values the header values.</p>
 </li>
 <li>
-<p><code><strong>disableHttp2</strong></code> (<em>boolean</em>) Disable use of HTTP/2 protocol. The default value is <code>false</code>. For insecure HTTP connections HTTP/2 is always disabled. (added in v3.2.0)</p>
+<p><code><strong>disableHttp2</strong></code> (<em>boolean</em>) Disable use of HTTP/2 protocol. The default value is <code>false</code>. For insecure HTTP connections HTTP/2 is always disabled.</p>
 </li>
 <li>
 <p><code><strong>connectionTimeout</strong></code> (<em>number</em>) The timeout on establishing the connection, in milliseconds. The default value is <code>10000</code>.</p>
@@ -738,7 +745,7 @@ For every new combination of <code>connectionTimeout</code>, <code>followRedirec
 </div>
 </div>
 <div class="sect1">
-<h2 id="keystore_and_truststore_configuration_v3_0_0"><a class="link" href="#keystore_and_truststore_configuration_v3_0_0">KeyStore and TrustStore Configuration [<strong>v3.0.0+</strong>]</a></h2>
+<h2 id="keystore_and_truststore_configuration"><a class="link" href="#keystore_and_truststore_configuration">KeyStore and TrustStore Configuration</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Use JVM system properties to configure KeyStore and TrustSore:
@@ -860,22 +867,7 @@ const response = httpClient.request({
 <div class="ulist">
 <ul>
 <li>
-<p>This library is not compatible with XP releases before version 7.0. Make sure you reference the lib as <code>/lib/http-client</code>
-and not as <code>/lib/xp/http-client</code> or <code>/site/lib/xp/http-client</code>.</p>
-</li>
-<li>
-<p>Starting from version 3.0.0 library Uses Java HttpClient instead of OkHttp Client.
-It may introduce a few minor incompatibilities.
-For instance, Default User-Agent is now JVM vendor dependent.</p>
-</li>
-<li>
-<p>Starting from version 3.0.0 library does not support Preemptive authentication.
-Use <code>Authorization: Basic &lt;credentials&gt;</code> header instead.</p>
-</li>
-<li>
-<p>Starting from version 3.0.0 library uses Java Platform KeyStore.
-It is JVM vendor specific but in most cases it is specified by <code>javax.net.ssl.keyStore</code> system property.
-KeyStore Configuration is no longer applicable and <code>clientCertificate</code> can only be typeof Stream.</p>
+<p>Preemptive authentication is not supported. Use an <code>Authorization: Basic &lt;credentials&gt;</code> header instead.</p>
 </li>
 </ul>
 </div>
@@ -884,7 +876,7 @@ KeyStore Configuration is no longer applicable and <code>clientCertificate</code
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-02 07:12:58 UTC
+Last updated 2026-07-02 07:13:21 UTC
 </div>
 </div>
 </body>
