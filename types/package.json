@@ -1,0 +1,33 @@
+{
+  "name": "@enonic-types/lib-http-client",
+  "version": "0.0.0",
+  "description": "Type definitions for the Enonic XP HTTP Client library",
+  "types": "index.d.ts",
+  "files": [
+    "*"
+  ],
+  "keywords": [
+    "enonic",
+    "enonic-xp",
+    "lib-http-client",
+    "http",
+    "http-client",
+    "types",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/enonic/lib-http-client#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enonic/lib-http-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/enonic/lib-http-client/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@enonic-types/core": "^8.0.0"
+  }
+}
