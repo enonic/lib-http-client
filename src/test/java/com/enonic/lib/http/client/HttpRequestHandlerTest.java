@@ -237,6 +237,22 @@ public class HttpRequestHandlerTest
     }
 
     @Test(timeout = 20000)
+    public void testReadTimeoutsRemovedAfterChunks()
+        throws Exception
+    {
+        final MockResponse response = new MockResponse().setBody( new Buffer().write( new byte[1024 * 1024] ) )
+            .throttleBody( 8 * 1024, 1, TimeUnit.MILLISECONDS );
+        server.enqueue( response );
+
+        final HttpRequestHandler handler = new HttpRequestHandler();
+        handler.setUrl( "http://" + getServerHost() + "/my/url" );
+        handler.setReadTimeout( 60_000L );
+        handler.request();
+
+        assertEquals( 0, HttpRequestHandler.READ_TIMEOUT_SCHEDULER.getQueue().size() );
+    }
+
+    @Test(timeout = 20000)
     public void testConnectTimeout()
         throws Exception
     {
