@@ -12,7 +12,12 @@ final class SharedWorkerThreadFactory
 
     SharedWorkerThreadFactory()
     {
-        namePrefix = "lib-httpclient-Shared-Worker-";
+        this( "lib-httpclient-Shared-Worker-" );
+    }
+
+    SharedWorkerThreadFactory( final String namePrefix )
+    {
+        this.namePrefix = namePrefix;
     }
 
     @Override
