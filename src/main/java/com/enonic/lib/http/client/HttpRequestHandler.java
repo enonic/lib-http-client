@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import com.github.mizosoft.methanol.MoreBodySubscribers;
@@ -30,6 +32,10 @@ public final class HttpRequestHandler
     private static final long DEFAULT_READ_TIMEOUT = 10_000;
 
     static final int MAX_IN_MEMORY_BODY_STREAM_BYTES = 10 * 1024 * 1024;
+
+    // Methanol schedules a new read timeout for every body chunk. Its default scheduler keeps cancelled timeouts queued
+    // until they would have fired, which piles up under load. Cancelled timeouts must be removed right away instead.
+    private static final ScheduledThreadPoolExecutor READ_TIMEOUT_SCHEDULER = createReadTimeoutScheduler();
 
     private String url;
 
@@ -112,7 +118,18 @@ public final class HttpRequestHandler
 
         return client.send( request, mapToFullyReadByteSource(
             MoreBodySubscribers.withReadTimeout( HttpResponse.BodySubscribers.ofInputStream(),
-                                                 Duration.ofMillis( requireNonNullElse( readTimeout, DEFAULT_READ_TIMEOUT ) ) ) ) );
+                                                 Duration.ofMillis( requireNonNullElse( readTimeout, DEFAULT_READ_TIMEOUT ) ),
+                                                 READ_TIMEOUT_SCHEDULER ) ) );
+    }
+
+    private static ScheduledThreadPoolExecutor createReadTimeoutScheduler()
+    {
+        final ScheduledThreadPoolExecutor scheduler =
+            new ScheduledThreadPoolExecutor( 1, new SharedWorkerThreadFactory( "lib-httpclient-Read-Timeout-" ) );
+        scheduler.setRemoveOnCancelPolicy( true );
+        scheduler.setKeepAliveTime( 60, TimeUnit.SECONDS );
+        scheduler.allowCoreThreadTimeOut( true );
+        return scheduler;
     }
 
     private Trace startTracing()
