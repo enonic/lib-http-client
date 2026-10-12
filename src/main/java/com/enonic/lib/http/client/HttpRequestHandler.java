@@ -35,7 +35,7 @@ public final class HttpRequestHandler
 
     // Methanol schedules a new read timeout for every body chunk. Its default scheduler keeps cancelled timeouts queued
     // until they would have fired, which piles up under load. Cancelled timeouts must be removed right away instead.
-    private static final ScheduledThreadPoolExecutor READ_TIMEOUT_SCHEDULER = createReadTimeoutScheduler();
+    static final ScheduledThreadPoolExecutor READ_TIMEOUT_SCHEDULER = createReadTimeoutScheduler();
 
     private String url;
 
